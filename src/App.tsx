@@ -13,6 +13,7 @@ import { Home } from '@/screens/Home'
 import { Settings } from '@/screens/Settings'
 import { More } from '@/screens/More'
 import { Lists } from '@/screens/Lists'
+import { Track } from '@/screens/Track'
 import { ListDetail } from '@/screens/ListDetail'
 
 export function App() {
@@ -45,7 +46,7 @@ function Shell() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/suivi" element={<Soon title="Suivi" phase="Phase 1 · grossesse — Phase 2 · bébé" />} />
+          <Route path="/suivi" element={<Track />} />
           <Route path="/listes" element={<Lists />} />
           <Route path="/listes/:id" element={<ListDetail />} />
           <Route path="/plus" element={<More />} />

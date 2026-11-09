@@ -1,27 +1,44 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Sheet } from './ui/Sheet'
 import { Button } from './ui/Button'
+import { Field } from './ui/Field'
 import { usePhase } from '@/app/phase'
-import { useStore } from '@/sync/store'
+import { useRows, useStore } from '@/sync/store'
 import { useToast } from './ui/Toast'
+import { AppointmentSheet, JournalSheet, MeasureSheet } from './pregnancy/Sheets'
+import { between, type ChecklistRow, type ItemRow } from '@/lib/checklists'
+import type { BaseRow } from '@/sync/tables'
 import { notes, quickActions } from '@/content/fr'
 
+type Open = null | 'rdv' | 'journal' | 'measure' | 'task'
+
 /**
- * Ajout rapide (bouton central). S'adapte à la phase :
- * en Phase 2, les gros boutons repas / couche / sommeil arriveront ici.
+ * Ajout rapide (bouton central) : 1 tap pour choisir, 1 tap pour valider.
+ * Avant la naissance : RDV, journal, mesure, tâche. Après : suivi bébé (Phase 2).
  */
 export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { phase } = usePhase()
   const { save } = useStore()
   const toast = useToast()
   const [text, setText] = useState('')
+  const [sub, setSub] = useState<Open>(null)
 
-  const upcoming =
+  const go = (s: Open) => {
+    onClose()
+    setSub(s)
+  }
+
+  const actions: { label: string; emoji: string; onClick?: () => void }[] =
     phase === 'after'
-      ? ['🍼 Repas', '💩 Couche', '😴 Sommeil', '💊 Vitamine']
+      ? [{ label: 'Repas', emoji: '🍼' }, { label: 'Couche', emoji: '💩' }, { label: 'Sommeil', emoji: '😴' }, { label: 'Vitamine', emoji: '💊' }]
       : phase === 'dday'
-        ? ['⏱️ Contraction', '📞 Contacts', '🧳 Valise']
-        : ['📅 Rendez-vous', '📝 Journal', '⚖️ Mesure', '✅ Tâche']
+        ? [{ label: 'Contraction', emoji: '⏱️' }, { label: 'Contacts', emoji: '📞' }, { label: 'Valise', emoji: '🧳' }]
+        : [
+            { label: 'Rendez-vous', emoji: '📅', onClick: () => go('rdv') },
+            { label: 'Journal', emoji: '📝', onClick: () => go('journal') },
+            { label: 'Mesure', emoji: '⚖️', onClick: () => go('measure') },
+            { label: 'Tâche', emoji: '✅', onClick: () => go('task') },
+          ]
 
   async function sendNote(body: string) {
     if (!body.trim()) return
@@ -32,34 +49,105 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title={quickActions.title}>
-      <div className="grid grid-cols-2 gap-3">
-        {upcoming.map((u) => (
-          <button key={u} disabled className="rounded-3xl bg-surface p-4 min-h-24 text-left font-bold text-lg opacity-60 shadow-soft">
-            {u}
-            <span className="block text-xs font-semibold text-ink-soft">bientôt</span>
-          </button>
-        ))}
-      </div>
-      <form
-        className="mt-5 flex flex-col gap-2"
-        onSubmit={(e) => {
-          e.preventDefault()
-          void sendNote(text)
-        }}
-      >
-        <label htmlFor="quick-note" className="font-bold px-1">
-          💌 {quickActions.note}
-        </label>
-        <input
-          id="quick-note"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={notes.placeholder}
-          className="min-h-13 rounded-2xl bg-surface-2 px-4 border-2 border-transparent focus:border-primary focus:outline-none"
-        />
+    <>
+      <Sheet open={open} onClose={onClose} title={quickActions.title}>
+        <div className="grid grid-cols-2 gap-3">
+          {actions.map((a) => (
+            <button
+              key={a.label}
+              disabled={!a.onClick}
+              onClick={a.onClick}
+              className={`press rounded-3xl bg-surface p-4 min-h-24 text-left font-bold text-lg shadow-soft ${a.onClick ? '' : 'opacity-60'}`}
+            >
+              <span className="text-3xl block" aria-hidden>
+                {a.emoji}
+              </span>
+              {a.label}
+              {!a.onClick && <span className="block text-xs font-semibold text-ink-soft">bientôt</span>}
+            </button>
+          ))}
+        </div>
+        <form
+          className="mt-5 flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void sendNote(text)
+          }}
+        >
+          <label htmlFor="quick-note" className="font-bold px-1">
+            💌 {quickActions.note}
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="quick-note"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={notes.placeholder}
+              className="flex-1 min-h-13 rounded-2xl bg-surface-2 px-4 border-2 border-transparent focus:border-primary focus:outline-none"
+            />
+            <Button type="submit" size="md" className="min-h-13">
+              {notes.send}
+            </Button>
+          </div>
+        </form>
+      </Sheet>
+      <AppointmentSheet open={sub === 'rdv'} onClose={() => setSub(null)} />
+      <JournalSheet open={sub === 'journal'} onClose={() => setSub(null)} />
+      <MeasureSheet open={sub === 'measure'} onClose={() => setSub(null)} />
+      <TaskSheet open={sub === 'task'} onClose={() => setSub(null)} />
+    </>
+  )
+}
+
+/** Ajouter une tâche dans une liste existante. */
+function TaskSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const lists = (useRows<BaseRow & ChecklistRow>('checklists') ?? []).sort((a, b) => a.position - b.position)
+  const items = useRows<BaseRow & ItemRow>('checklist_items') ?? []
+  const { save } = useStore()
+  const toast = useToast()
+  const [listId, setListId] = useState<string | null>(null)
+  const [label, setLabel] = useState('')
+  const target = listId ?? lists[0]?.id ?? null
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!label.trim()) return
+    let id = target
+    if (!id) {
+      const l = await save('checklists', { title: 'À faire', kind: 'custom', emoji: '✅', position: 0 })
+      id = l.id
+    }
+    const last = items.filter((i) => i.checklist_id === id).reduce((m, i) => Math.max(m, i.position), -1)
+    await save('checklist_items', { checklist_id: id, label: label.trim(), done: false, position: between(last, undefined) })
+    setLabel('')
+    toast('Ajouté ✅')
+    onClose()
+  }
+
+  return (
+    <Sheet open={open} onClose={onClose} title="Nouvelle tâche">
+      <form onSubmit={submit} className="flex flex-col gap-4">
+        <Field label="Tâche" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Acheter des bodies 1 mois…" autoFocus />
+        {lists.length > 0 && (
+          <fieldset>
+            <legend className="font-bold mb-1.5 px-1">Dans la liste</legend>
+            <div className="flex flex-wrap gap-2">
+              {lists.map((l) => (
+                <button
+                  type="button"
+                  key={l.id}
+                  aria-pressed={target === l.id}
+                  onClick={() => setListId(l.id)}
+                  className={`press min-h-11 px-4 rounded-full font-semibold text-sm ${target === l.id ? 'bg-ink text-bg' : 'bg-surface-2'}`}
+                >
+                  {l.emoji} {l.title}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
         <Button type="submit" block>
-          {notes.send}
+          Ajouter
         </Button>
       </form>
     </Sheet>
