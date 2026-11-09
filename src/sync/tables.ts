@@ -39,6 +39,8 @@ export const TABLES = {
   vaccines: { mode: 'rw', indexes: ['code'] },
   documents: { mode: 'rw', indexes: ['doc_date'] },
   memories: { mode: 'rw', indexes: ['memory_date'] },
+  parent_checkins: { mode: 'rw', indexes: ['entry_date'] },
+  letters: { mode: 'rw', indexes: ['written_on'] },
 } satisfies Record<string, TableDef>
 
 export type TableName = keyof typeof TABLES

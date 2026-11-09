@@ -83,7 +83,7 @@ jobs:
       - name: Fonction des notifications (push)
         if: steps.check.outputs.ok == 'true'
         run: |
-          supabase functions deploy push --use-api --no-verify-jwt --yes
+          supabase functions deploy push calendar --use-api --no-verify-jwt --yes
           # Crée les clés VAPID si besoin (idempotent) et enregistre l'URL pour le cron
           for i in 1 2 3 4 5; do
             if curl -fsS -X POST "https://$SUPABASE_PROJECT_REF.supabase.co/functions/v1/push" \

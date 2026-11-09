@@ -5,3 +5,7 @@ project_id = "bibouns"
 # (secret du cron, ou session de l'utilisateur), pas par la passerelle.
 [functions.push]
 verify_jwt = false
+
+# Abonnement calendrier : protégé par un jeton personnel dans l'URL.
+[functions.calendar]
+verify_jwt = false

@@ -20,6 +20,8 @@ export interface ItemRow {
   note?: string | null
   budget_cents?: number | null
   position: number
+  /** réservé par un proche via la liste de naissance partagée */
+  reserved_by?: string | null
 }
 
 /**

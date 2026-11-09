@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase'
 import { BabySettings } from '@/components/settings/BabySettings'
 import { ShortcutSettings } from '@/components/settings/ShortcutSettings'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
+import { CalendarSettings } from '@/components/settings/CalendarSettings'
 import { avatars, memberColors, onboarding as to, settings as t, sync as tsync } from '@/content/fr'
 
 export function Settings() {
@@ -120,6 +121,7 @@ export function Settings() {
       </Card>
 
       <NotificationSettings />
+      <CalendarSettings />
       <BabySettings />
       <ShortcutSettings />
 

@@ -38,7 +38,8 @@ export class BibDb extends Dexie {
       const extra = ('indexes' in TABLES[t] ? (TABLES[t] as { indexes?: string[] }).indexes : undefined) ?? []
       stores[t] = ['id', 'synced_at', 'updated_at', ...extra].join(', ')
     }
-    this.version(1).stores(stores)
+    // v2 : ajout de parent_checkins et letters (Dexie crée les nouvelles tables, les données restent)
+    this.version(2).stores(stores)
   }
 
   rows<T extends BaseRow = BaseRow>(table: TableName): Table<T, string> {

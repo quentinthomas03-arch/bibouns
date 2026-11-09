@@ -185,6 +185,47 @@ reset role;
 set role anon;
 select pg_temp.check((select (public.quick_log((select r->>'token' from r_tok), 'pipi')->>'ok')::boolean = false), 'jeton révoqué refusé');
 
+reset role;
+select pg_temp.check(public.hash_code('ab-cde 2') = 'f2e4d1e8ff91e67db4350481b3fd58b86dfd8d5168f9463bdb4ed46fdea65464', 'empreinte des jetons identique au calcul de la fonction calendrier');
+set role authenticated;
+
+-- Liste de naissance partagée : lecture publique limitée, réservation
+reset role;
+set role authenticated;
+select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
+insert into public.checklists (id, household_id, title, kind, position) values ('cccccccc-0000-0000-0000-000000000001', public.my_household_id(), 'Achats', 'achats', 0);
+insert into public.checklist_items (id, household_id, checklist_id, label, budget_cents, note, position) values
+  ('dddddddd-0000-0000-0000-000000000001', public.my_household_id(), 'cccccccc-0000-0000-0000-000000000001', 'Poussette', 45000, 'note privée', 0),
+  ('dddddddd-0000-0000-0000-000000000002', public.my_household_id(), 'cccccccc-0000-0000-0000-000000000001', 'Body', 1000, null, 1);
+create temp table r_wl as select public.create_wishlist_share('cccccccc-0000-0000-0000-000000000001', 'Merci !') as r;
+grant select on r_wl to anon;
+select pg_temp.check((select (r->>'ok')::boolean from r_wl), 'liste partagée');
+reset role;
+set role anon;
+create temp table pub as select public.public_wishlist((select r->>'token' from r_wl)) as r;
+select pg_temp.check((select jsonb_array_length(r->'items') = 2 from pub), 'la famille voit les 2 éléments');
+select pg_temp.check((select (r::text not like '%45000%' and r::text not like '%note privée%') from pub), 'ni budget ni notes exposés');
+select pg_temp.check((select (public.reserve_wishlist_item((select r->>'token' from r_wl), 'dddddddd-0000-0000-0000-000000000001', 'Mamie')->>'ok')::boolean), 'Mamie réserve la poussette');
+select pg_temp.check((select public.reserve_wishlist_item((select r->>'token' from r_wl), 'dddddddd-0000-0000-0000-000000000001', 'Tonton')->>'error') = 'deja_pris', 'pas de double réservation');
+select pg_temp.check((select public.reserve_wishlist_item((select r->>'token' from r_wl), 'dddddddd-0000-0000-0000-000000000001', 'Tonton', true)->>'error') = 'pas_le_votre', 'on ne libère pas la réservation d''un autre');
+select pg_temp.check((select (public.public_wishlist('FAUX')->>'ok')::boolean = false), 'faux lien refusé');
+select pg_temp.check((select public.reserve_wishlist_item('FAUX', 'dddddddd-0000-0000-0000-000000000002', 'X')->>'error') = 'lien_invalide', 'réservation avec faux lien refusée');
+reset role;
+set role authenticated;
+select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
+select pg_temp.check((select reserved_by = 'Mamie' from public.checklist_items where id = 'dddddddd-0000-0000-0000-000000000001'), 'les parents voient « réservé par Mamie »');
+select public.revoke_wishlist_share('cccccccc-0000-0000-0000-000000000001');
+reset role;
+set role anon;
+select pg_temp.check((select (public.public_wishlist((select r->>'token' from r_wl))->>'ok')::boolean = false), 'lien désactivé');
+reset role;
+set role authenticated;
+select pg_temp.as_user('44444444-4444-4444-4444-444444444444');
+select pg_temp.check((select public.create_wishlist_share('cccccccc-0000-0000-0000-000000000001')->>'ok') = 'true', 'partage par l''autre parent');
+select pg_temp.as_user('99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select public.create_wishlist_share('cccccccc-0000-0000-0000-000000000001')->>'error') = 'liste_introuvable', 'un intrus ne peut pas partager nos listes');
+select pg_temp.check((select (public.create_calendar_token()->>'ok')::boolean), 'jeton calendrier');
+
 -- Suppression définitive (foyer de l'intrus)
 reset role;
 set role authenticated;
