@@ -15,8 +15,8 @@ L'appli de **Quentin & Aude** pour vivre la grossesse, le Jour J et les premiers
 
 1. [Mise en route (une seule fois, ~15 min, depuis l'iPhone)](#1-mise-en-route)
 2. [Installer l'appli sur iPhone](#2-installer-lappli-sur-iphone)
-3. [Inviter Aude / récupérer un profil](#3-inviter-aude--récupérer-un-profil)
-4. [Sauvegarder et exporter les données](#4-sauvegarder-et-exporter)
+3. [Inviter Aude / récupérer un profil](#3-inviter-aude--récupérer-un-profil) · [Raccourcis & Siri](#3-bis-raccourcis-iphone-saisie-en-1-tap-siri-widget) · [Notifications](#3-ter-notifications)
+4. [Sauvegarder et exporter](#4-sauvegarder-et-exporter) · [Recette sur iPhone](#4-bis-recette-sur-iphone-à-faire-une-fois-à-deux) · [Dépannage](#4-ter-dépannage)
 5. [Modifier les textes](#5-modifier-les-textes)
 6. [Comment ça marche (technique)](#6-comment-ça-marche)
 7. [Développement](#7-développement)
@@ -135,12 +135,43 @@ Chaque catégorie se coupe séparément, par personne.
 
 ## 4. Sauvegarder et exporter
 
-- **Export complet** (Phase 4) : un fichier ZIP avec toutes les données (JSON + tableaux CSV lisibles dans Excel/Numbers) et toutes les photos en JPG rangées par mois, prêtes pour un livre photo. Plus un PDF « livre de naissance » mois par mois.
-- **Enregistrer dans Photos** (Phase 3) : depuis un souvenir, via le menu de partage de l'iPhone.
-- **Tout supprimer** (Phase 4) : *Réglages → Supprimer toutes nos données*, avec une double confirmation.
-- **Important** : l'offre gratuite de Supabase **n'inclut pas de sauvegardes téléchargeables**. L'export ZIP, à faire régulièrement (par exemple une fois par mois, dans iCloud Drive), est donc **la** sauvegarde à conserver. L'appli vous le rappellera.
+*Réglages → Sauvegarde & données* :
 
----
+- **Données** : un ZIP avec des **tableaux CSV** (suivi bébé, croissance, vaccins, rendez-vous, listes, souvenirs… lisibles dans Numbers ou Excel) et les **données complètes** en JSON. Choisis « Enregistrer dans Fichiers » → iCloud Drive.
+- **Photos** : un ZIP de JPG **rangés par mois** (`souvenirs/2027-05_mai/2027-05-20_premier-sourire_1.jpg`), prêts pour un livre photo. Les photos sont découpées en lots de 120 pour ménager la mémoire de l'iPhone.
+- **Livre de naissance** : une mise en page mois par mois (photos, mesures, premières fois). Touche **Imprimer / PDF**, puis dans la fenêtre d'impression **Partager → Enregistrer dans Fichiers**.
+- **Rappel** : une notification le 1er de chaque mois, et la date du dernier export s'affiche.
+- **Effacer des données de test** : suivi bébé, contractions, naissance de test, mots doux ou mesures, au choix.
+- **Supprimer toutes nos données** : il faut taper `SUPPRIMER`. Les photos sont effacées, puis le foyer et tout son contenu, pour vous deux. C'est irréversible.
+
+⚠️ L'offre gratuite de Supabase **n'inclut pas de sauvegarde téléchargeable** : l'export mensuel est **la** sauvegarde.
+
+## 4 bis. Recette sur iPhone (à faire une fois, à deux)
+
+- [ ] Les deux iPhone ont l'appli **installée** (icône sur l'écran d'accueil) et sont dans le même foyer
+- [ ] Mot doux envoyé par l'un → visible chez l'autre en ~2 s, avec une notification
+- [ ] Mode Avion : un biberon noté hors ligne → il arrive chez l'autre au retour du réseau
+- [ ] Fermer et rouvrir l'appli : on reste connecté, sans écran de création de foyer
+- [ ] Codes de secours de **chacun** copiés dans les Notes
+- [ ] *Réglages → Notifications* : **Activer** puis **Tester** sur chaque iPhone
+- [ ] Rendez-vous test dans 2 h 10 avec le rappel « 2 h avant » → notification en moins de 10 min
+- [ ] Une photo ajoutée dans Souvenirs s'affiche sur l'autre téléphone
+- [ ] Un raccourci « Biberon » créé dans l'app Raccourcis fonctionne (et « Dis Siri, Biberon »)
+- [ ] Mode sombre (réglage iPhone) lisible la nuit
+- [ ] Un **export** de données rangé dans iCloud Drive
+- [ ] Données de test effacées (*Sauvegarde → Effacer des données de test*) et phase remise sur **Automatique**
+
+## 4 ter. Dépannage
+
+| Problème | Solution |
+|---|---|
+| L'appli ne se met pas à jour | La fermer complètement (balayer vers le haut) et la rouvrir, une ou deux fois |
+| « Hors ligne » qui reste affiché | Toucher le badge pour relancer la synchro ; vérifier le réseau |
+| Plus de notifications | *Réglages iPhone → Notifications → Biboun's* ; puis dans l'appli **Couper** puis **Activer** |
+| Nouveau téléphone | Installer l'appli, puis **J'ai un code de secours** |
+| Code d'invitation expiré | *Réglages → Notre foyer → Nouveau code d'invitation* |
+| Une étape GitHub est rouge | Ouvrir l'onglet **Actions** du dépôt et lire le message ; le plus souvent, un secret Supabase est mal copié |
+| Le projet Supabase est « en pause » | Le rouvrir depuis supabase.com (*Restore*) ; le ping quotidien évite normalement la pause |
 
 ## 5. Modifier les textes
 
@@ -214,6 +245,7 @@ npm install
 npm run dev:demo   # mode démo : aucune donnée envoyée, tout est local
 npm test           # tests unitaires (synchro, calculs)
 npm run test:db    # tests de sécurité SQL (nécessite PostgreSQL)
+# Fonction de notifications (Deno) : supabase/functions/push — vérifiable avec `deno check`
 npm run build
 ```
 
@@ -225,4 +257,4 @@ Pour brancher une vraie base en local, crée un fichier `.env.local` contenant `
 - [x] **Phase 1** : accueil enrichi (fruit de la semaine), checklists, prénoms en swipe, suivi de grossesse
 - [x] **Phase 2** : suivi bébé en 2 taps, carnet de santé (courbes OMS, vaccins), « qui fait quoi », raccourcis iPhone
 - [x] **Phase 3** : souvenirs et photos, notifications push, mode Jour J complet
-- [ ] **Phase 4** : export ZIP/PDF, suppression des données, finitions
+- [x] **Phase 4** : export ZIP/PDF, suppression des données, finitions (chargement à la demande, écran d'erreur, contrôle d'accessibilité axe-core sans violation)

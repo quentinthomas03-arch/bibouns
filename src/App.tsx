@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useSession } from '@/app/session'
 import { useTheme } from '@/app/theme'
 import { TabBar } from '@/components/TabBar'
@@ -9,17 +10,21 @@ import { Onboarding } from '@/screens/Onboarding'
 import { InstallGate, isIos, isStandalone } from '@/screens/InstallGate'
 import { ConfigMissing } from '@/screens/ConfigMissing'
 import { Home } from '@/screens/Home'
-import { Settings } from '@/screens/Settings'
 import { More } from '@/screens/More'
-import { Lists } from '@/screens/Lists'
-import { Track } from '@/screens/Track'
-import { Names } from '@/screens/Names'
-import { Health } from '@/screens/Health'
-import { DayJ } from '@/screens/DayJ'
-import { Memories } from '@/screens/Memories'
-import { Backup } from '@/screens/Backup'
-import { Book } from '@/screens/Book'
-import { ListDetail } from '@/screens/ListDetail'
+
+// Écrans chargés à la demande (démarrage plus rapide). Ils restent disponibles
+// hors ligne : le service worker met tous les fichiers en cache.
+const named = <K extends string>(load: () => Promise<Record<K, React.ComponentType>>, name: K) => lazy(() => load().then((m) => ({ default: m[name] })))
+const Settings = named(() => import('@/screens/Settings'), 'Settings')
+const Lists = named(() => import('@/screens/Lists'), 'Lists')
+const ListDetail = named(() => import('@/screens/ListDetail'), 'ListDetail')
+const Track = named(() => import('@/screens/Track'), 'Track')
+const Names = named(() => import('@/screens/Names'), 'Names')
+const Health = named(() => import('@/screens/Health'), 'Health')
+const DayJ = named(() => import('@/screens/DayJ'), 'DayJ')
+const Memories = named(() => import('@/screens/Memories'), 'Memories')
+const Backup = named(() => import('@/screens/Backup'), 'Backup')
+const Book = named(() => import('@/screens/Book'), 'Book')
 
 export function App() {
   useTheme() // applique le thème choisi sur ce téléphone
@@ -49,6 +54,14 @@ function Shell() {
   return (
     <>
       <main>
+        <ErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="min-h-[60dvh] grid place-items-center" aria-busy="true">
+                <Biboun size={80} className="animate-float" title="Chargement" />
+              </div>
+            }
+          >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/suivi" element={<Track />} />
@@ -64,6 +77,8 @@ function Shell() {
           <Route path="/livre" element={<Book />} />
           <Route path="*" element={<Home />} />
         </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <TabBar onQuick={() => setQuick(true)} />
       <QuickSheet open={quick} onClose={() => setQuick(false)} />

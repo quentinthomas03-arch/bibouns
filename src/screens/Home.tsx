@@ -14,7 +14,7 @@ import type { Phase } from '@/lib/phase'
 import { WeekCard } from '@/components/home/WeekCard'
 import { NextMilestones } from '@/components/home/NextMilestones'
 import { BabySummary } from '@/components/baby/BabySummary'
-import { ContractionTimer } from '@/screens/DayJ'
+import { ContractionTimer } from '@/components/ContractionTimer'
 import { notifyPartner } from '@/lib/push'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
 
