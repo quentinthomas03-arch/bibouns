@@ -3,7 +3,7 @@ import { Heart, Rocket, Stethoscope, Camera, Settings } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 const items: Array<{ to: string; label: string; icon: ReactNode; color: string; soon?: string }> = [
-  { to: '/prenoms', label: 'Prénoms', icon: <Heart />, color: 'bg-rose', soon: 'Phase 1' },
+  { to: '/prenoms', label: 'Prénoms', icon: <Heart />, color: 'bg-rose' },
   { to: '/jour-j', label: 'Jour J', icon: <Rocket />, color: 'bg-apricot', soon: 'Phase 3' },
   { to: '/sante', label: 'Carnet de santé', icon: <Stethoscope />, color: 'bg-sage', soon: 'Phase 2' },
   { to: '/souvenirs', label: 'Souvenirs', icon: <Camera />, color: 'bg-plum', soon: 'Phase 3' },

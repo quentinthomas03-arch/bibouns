@@ -129,6 +129,13 @@ Les contenus médicaux sont marqués `⚕️ À VALIDER (Aude)`.
 
 ---
 
+### Données de prénoms
+
+- Source : **INSEE, « Fichier des prénoms »**, édition nationale (naissances en France depuis 1900), sous **Licence Ouverte Etalab** : réutilisation libre, avec mention de la source (affichée dans l'appli).
+- `scripts/build-names.py` convertit le fichier CSV de l'INSEE en `src/content/names.json`. Il garde environ 4 300 prénoms, avec pour chacun le sexe, le nombre de naissances sur 10 ans, l'année du pic et la tendance. Pour mettre à jour à la sortie d'une nouvelle édition, télécharge le CSV « France » sur insee.fr, puis lance `python3 scripts/build-names.py prenoms-XXXX-nat.csv`.
+- Les **origines** ne sont pas fournies par l'INSEE : elles sont saisies à la main dans `src/content/nameOrigins.ts` (indicatives, à enrichir).
+- Les votes sont **privés** : la base ne laisse lire à chacun que ses propres votes. Les matchs sont calculés côté serveur par une fonction qui ne renvoie que les « j'aime » communs.
+
 ## 6. Comment ça marche
 
 ```
@@ -183,7 +190,7 @@ Pour brancher une vraie base en local, crée un fichier `.env.local` contenant `
 ### Feuille de route
 
 - [x] **Phase 0** : base de données + RLS, foyer par code, synchro hors ligne + temps réel, PWA, design system, déploiement
-- [ ] **Phase 1** : accueil enrichi (fruit de la semaine), checklists, prénoms en swipe, suivi de grossesse
+- [x] **Phase 1** : accueil enrichi (fruit de la semaine), checklists, prénoms en swipe, suivi de grossesse
 - [ ] **Phase 2** : suivi bébé en 2 taps, carnet de santé (courbes OMS, vaccins), « qui fait quoi »
 - [ ] **Phase 3** : souvenirs et photos, notifications push, mode Jour J complet
 - [ ] **Phase 4** : export ZIP/PDF, suppression des données, finitions

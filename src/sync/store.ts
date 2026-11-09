@@ -32,7 +32,8 @@ export async function saveRow<T extends object>(ctx: Ctx, table: TableName, fiel
     created_by: existing?.created_by ?? ctx.memberId,
     created_at: existing?.created_at ?? nowIso(),
     updated_at: nowIso(),
-    deleted_at: (fields as { deleted_at?: string | null }).deleted_at ?? existing?.deleted_at ?? null,
+    // deleted_at explicite (même null) l'emporte : permet de "restaurer" une ligne
+    deleted_at: 'deleted_at' in fields ? ((fields as { deleted_at?: string | null }).deleted_at ?? null) : (existing?.deleted_at ?? null),
   }
   await ctx.engine.write(table, row)
   return row
