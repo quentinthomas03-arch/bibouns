@@ -4,7 +4,7 @@
  * ============================================================================
  *  Indexé par semaines d'aménorrhée RÉVOLUES (ex. "15 SA + 6 j" → semaine 15).
  *
- *  ⚕️ À VALIDER (Aude) : tailles et poids MOYENS et APPROXIMATIFS, issus des
+ *  ⚕️ CONTENU SANTÉ (repères de croissance fœtale couramment publiés) : tailles et poids MOYENS et APPROXIMATIFS, issus des
  *  repères couramment publiés (longueur tête-fesses jusqu'à ~19 SA, puis
  *  longueur totale). Chaque bébé grandit à son rythme : seule l'échographie
  *  et le suivi médical font foi.
@@ -81,7 +81,7 @@ export function formatLength(cm: number): string {
 
 /**
  * Petits conseils pratiques par période, pour la maman et pour le papa.
- * Ton : complice, jamais injonctif. ⚕️ À VALIDER (Aude) pour la partie maman.
+ * Ton : complice, jamais injonctif. ⚕️ CONTENU SANTÉ : conseils généraux, jamais un avis médical.
  */
 export interface TipPeriod {
   from: number // SA révolues (incluses)
@@ -92,8 +92,8 @@ export interface TipPeriod {
 
 export const TIPS: TipPeriod[] = [
   { from: 0, to: 13, maman: 'Fatigue et nausées sont fréquentes au début : écoute ton corps et note ce qui t’aide dans le journal.', papa: 'Prends en charge les courses et les odeurs de cuisine : héros discret du 1er trimestre.' },
-  { from: 14, to: 17, maman: 'C’est le bon moment pour l’entretien prénatal précoce avec une sage-femme ou ton médecin : on y parle de tout, sans tabou.', papa: 'Renseigne-toi sur le congé de naissance et préviens ton employeur à l’avance : vérifie les règles à jour sur service-public.fr.' },
-  { from: 18, to: 22, maman: 'Les premiers mouvements arrivent souvent par ici : note la date dans le journal, c’est un joli souvenir.', papa: 'Lance la liste des achats bébé et compare les prix : le budget sera content.' },
+  { from: 14, to: 17, maman: 'C’est le bon moment pour l’entretien prénatal précoce avec une sage-femme ou ton médecin : on y parle de tout, sans tabou.', papa: 'Renseigne-toi sur ton congé de paternité (25 jours) et le nouveau congé supplémentaire de naissance (1 à 2 mois par parent depuis juillet 2026) : règles à jour sur service-public.fr.' },
+  { from: 18, to: 22, maman: 'Les premiers mouvements arrivent souvent par ici : note la date dans le journal, c’est un joli souvenir. Pense aussi au vaccin coqueluche, recommandé à partir de 20 SA : demande à ta sage-femme.', papa: 'Vérifie que ton vaccin coqueluche est à jour (rappel adulte) : l’entourage proche protège aussi bébé. Et lance la liste des achats !' },
   { from: 23, to: 27, maman: 'Pense à t’inscrire aux séances de préparation à la naissance : il y en a plusieurs, prises en charge.', papa: 'Mode de garde : selon la commune, les inscriptions en crèche se font tôt. On s’y met ?' },
   { from: 28, to: 31, maman: 'Le 3e trimestre commence : garde tes questions pour les prochains rendez-vous dans l’onglet Suivi.', papa: 'Monte les meubles de la chambre maintenant : plus tard, tu auras les mains prises.' },
   { from: 32, to: 35, maman: 'La consultation d’anesthésie a lieu en général au 8e mois : pense à la caler.', papa: 'Repère le trajet vers la maternité (de jour ET de nuit) et l’endroit où se garer.' },

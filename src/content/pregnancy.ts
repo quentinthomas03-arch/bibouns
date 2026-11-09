@@ -1,6 +1,6 @@
 /**
  * Contenus du suivi de grossesse (modifiables).
- * ⚕️ À VALIDER (Aude) : liste des symptômes.
+ * ⚕️ CONTENU SANTÉ : liste de ressentis courants, à titre de journal (aucune interprétation).
  */
 
 export const APPOINTMENT_KINDS = [

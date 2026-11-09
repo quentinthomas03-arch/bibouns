@@ -6,6 +6,8 @@
  *  Format d'une ligne : [libellé, budget estimé en € (optionnel), échéance]
  *  échéance = id d'une échéance de src/content/milestones.ts (optionnel)
  *  Les budgets sont des ordres de grandeur, à ajuster.
+ *  ⚠️ Ajouter une ligne à un modèle n'ajoute rien aux listes déjà créées :
+ *  ajouter la ligne à la main dans l'appli dans ce cas.
  * ============================================================================
  */
 
@@ -139,6 +141,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
       ['Déclarer la naissance à la CAF', null, 'caf-naissance'],
       ['Rattacher bébé à l’Assurance maladie et à la mutuelle', null, 'cpam-mutuelle'],
       ['Poser le reste du congé paternité', null, 'conge-pat'],
+      ['Décider du congé supplémentaire de naissance (1 ou 2 mois chacun)', null, 'conge-supp'],
     ],
   },
 ]

@@ -125,7 +125,7 @@ Tous les textes de l'appli sont dans **`src/content/fr.ts`**. Pour en changer un
 2. Change le texte **entre les guillemets** seulement.
 3. **Commit changes**. L'appli se met à jour toute seule ~3 min plus tard.
 
-Les contenus médicaux sont marqués `⚕️ À VALIDER (Aude)`.
+Les contenus de santé sont marqués `⚕️ CONTENU SANTÉ`, avec leurs sources et leur date de vérification. Les règles évoluent (vaccins, congés) : à revérifier une fois par an.
 
 ---
 

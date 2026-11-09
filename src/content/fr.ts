@@ -5,7 +5,7 @@
  *  Pour modifier un texte : change la valeur entre guillemets, puis commit.
  *  L'appli se met à jour toute seule après le déploiement.
  *
- *  Repère "⚕️ À VALIDER (Aude)" = contenu à caractère médical à relire.
+ *  Repère "⚕️ CONTENU SANTÉ" = contenu santé, avec sources et date de vérification.
  *  Les fichiers de contenu des modules suivants (semaines, vaccins,
  *  démarches...) seront ajoutés dans ce même dossier src/content/.
  * ============================================================================
