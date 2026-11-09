@@ -108,6 +108,15 @@ Un code expiré ? *Réglages → Notre foyer → Nouveau code d'invitation*. Cod
 
 ---
 
+## 3 bis. Raccourcis iPhone (saisie en 1 tap, Siri, widget)
+
+Une PWA ne peut pas créer de widget iOS. La meilleure alternative est l'app **Raccourcis** d'Apple :
+- *Réglages* de Biboun's → **Raccourcis iPhone & Siri** → **Créer mon jeton**, puis suis le pas-à-pas affiché (environ 5 min, une seule fois) ;
+- chaque raccourci (« Biberon », « Pipi », « Dodo »…) ajoute une saisie, qui apparaît **en temps réel sur les deux téléphones** ;
+- il se déclenche depuis le **widget Raccourcis** de l'écran d'accueil, avec **« Dis Siri, Biberon »**, ou en **touchant deux fois le dos de l'iPhone**.
+
+Côté sécurité : le jeton (24 caractères aléatoires) n'est stocké que haché. Il ne permet **que d'ajouter** une saisie bébé, pas de lire vos données, et il est limité à 30 saisies par tranche de 10 minutes. On le désactive en un tap.
+
 ## 4. Sauvegarder et exporter
 
 - **Export complet** (Phase 4) : un fichier ZIP avec toutes les données (JSON + tableaux CSV lisibles dans Excel/Numbers) et toutes les photos en JPG rangées par mois, prêtes pour un livre photo. Plus un PDF « livre de naissance » mois par mois.
@@ -128,6 +137,13 @@ Tous les textes de l'appli sont dans **`src/content/fr.ts`**. Pour en changer un
 Les contenus de santé sont marqués `⚕️ CONTENU SANTÉ`, avec leurs sources et leur date de vérification. Les règles évoluent (vaccins, congés) : à revérifier une fois par an.
 
 ---
+
+### Contenus santé et sources
+
+- **Courbes de croissance** : Standards de croissance de l'enfant de l'**OMS** (2006), tables LMS 0-24 mois. Elles sont extraites par `scripts/build-growth.py`, qui contrôle les valeurs publiées. Le carnet de santé français utilise depuis 2018 des courbes françaises (AFPA – CRESS/Inserm), donc les repères peuvent légèrement différer : l'appli le signale.
+- **Vaccins** : calendrier des vaccinations 2025 (ministère de la Santé / HAS), avec l'obligation des méningocoques B et ACWY depuis le 1er janvier 2025 et le nouveau schéma pneumocoque (Prevenar 20, avis HAS 2026). Le carnet papier et le médecin font foi.
+- **Congés** : congé de paternité (3 j + 25 j) et congé supplémentaire de naissance (depuis le 1er juillet 2026), à vérifier sur service-public.fr.
+- Tout est daté « vérifié nov. 2026 » dans `src/content/`. **À revérifier une fois par an** : le calendrier vaccinal change chaque année.
 
 ### Données de prénoms
 
@@ -191,6 +207,6 @@ Pour brancher une vraie base en local, crée un fichier `.env.local` contenant `
 
 - [x] **Phase 0** : base de données + RLS, foyer par code, synchro hors ligne + temps réel, PWA, design system, déploiement
 - [x] **Phase 1** : accueil enrichi (fruit de la semaine), checklists, prénoms en swipe, suivi de grossesse
-- [ ] **Phase 2** : suivi bébé en 2 taps, carnet de santé (courbes OMS, vaccins), « qui fait quoi »
+- [x] **Phase 2** : suivi bébé en 2 taps, carnet de santé (courbes OMS, vaccins), « qui fait quoi », raccourcis iPhone
 - [ ] **Phase 3** : souvenirs et photos, notifications push, mode Jour J complet
 - [ ] **Phase 4** : export ZIP/PDF, suppression des données, finitions

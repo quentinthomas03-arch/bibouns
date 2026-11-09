@@ -16,6 +16,7 @@ import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
 import { supabase } from '@/lib/supabase'
 import { BabySettings } from '@/components/settings/BabySettings'
+import { ShortcutSettings } from '@/components/settings/ShortcutSettings'
 import { avatars, memberColors, onboarding as to, settings as t, sync as tsync } from '@/content/fr'
 
 export function Settings() {
@@ -118,6 +119,7 @@ export function Settings() {
       </Card>
 
       <BabySettings />
+      <ShortcutSettings />
 
       <SectionTitle>{t.appearance}</SectionTitle>
       <Segmented<ThemePref>

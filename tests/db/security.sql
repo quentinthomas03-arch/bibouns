@@ -138,6 +138,31 @@ select pg_temp.check((select first_name = 'Quentin' from public.members where us
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select pg_temp.check((select count(*) = 0 from public.notes), 'ancien téléphone déconnecté du foyer');
 
+-- Raccourcis iPhone : jeton personnel
+select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
+create temp table r_tok as select public.create_shortcut_token() as r;
+select pg_temp.check((select length(r->>'token') = 24 from r_tok), 'jeton de raccourci créé');
+grant select on r_tok to anon;
+reset role;
+set role anon;
+select pg_temp.check((select (public.quick_log((select r->>'token' from r_tok), 'biberon', 120)->>'ok')::boolean), 'raccourci : biberon via anon + jeton');
+select pg_temp.check((select public.quick_log((select r->>'token' from r_tok), 'pipi')->>'message') = 'Pipi noté 💧', 'raccourci : pipi');
+select pg_temp.check((select (public.quick_log((select r->>'token' from r_tok), 'biberon')->>'message') = 'Biberon 120 ml noté 🍼'), 'raccourci : reprend la dernière quantité');
+select pg_temp.check((select (public.quick_log('MAUVAISJETON', 'pipi')->>'ok')::boolean = false), 'raccourci : mauvais jeton refusé');
+do $$ begin
+  perform 1 from public.baby_events;
+  raise exception 'ÉCHEC : anon lit les événements';
+exception when insufficient_privilege then raise notice 'ok - le jeton ne donne aucun droit de lecture';
+end $$;
+reset role;
+set role authenticated;
+select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
+select pg_temp.check((select count(*) = 3 from public.baby_events where created_by = public.my_member_id()), 'saisies du raccourci visibles par le foyer');
+select public.revoke_shortcut_token();
+reset role;
+set role anon;
+select pg_temp.check((select (public.quick_log((select r->>'token' from r_tok), 'pipi')->>'ok')::boolean = false), 'jeton révoqué refusé');
+
 -- anon n'a accès à rien
 reset role;
 set role anon;
