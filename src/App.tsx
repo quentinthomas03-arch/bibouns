@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useSession } from '@/app/session'
 import { useTheme } from '@/app/theme'
@@ -25,11 +25,23 @@ const DayJ = named(() => import('@/screens/DayJ'), 'DayJ')
 const Memories = named(() => import('@/screens/Memories'), 'Memories')
 const Backup = named(() => import('@/screens/Backup'), 'Backup')
 const Book = named(() => import('@/screens/Book'), 'Book')
+const BirthPlan = named(() => import('@/screens/BirthPlan'), 'BirthPlan')
+const Night = named(() => import('@/screens/Night'), 'Night')
+const PublicWishlist = lazy(() => import('@/screens/PublicWishlist').then((m) => ({ default: m.PublicWishlist })))
 
 export function App() {
   useTheme() // applique le thème choisi sur ce téléphone
   const { status } = useSession()
   const [skipInstall, setSkipInstall] = useState(false)
+
+  // Liste de naissance partagée : page publique, sans compte ni installation
+  const publicToken = location.hash.startsWith('#/cadeaux') ? new URLSearchParams(location.hash.split('?')[1] ?? '').get('t') : null
+  if (publicToken)
+    return (
+      <Suspense fallback={null}>
+        <PublicWishlist token={publicToken} />
+      </Suspense>
+    )
 
   if (status === 'unconfigured') return <ConfigMissing />
   if (status === 'loading')
@@ -51,6 +63,7 @@ export function App() {
 
 function Shell() {
   const [quick, setQuick] = useState(false)
+  const night = useLocation().pathname === '/nuit'
   return (
     <>
       <main>
@@ -75,12 +88,14 @@ function Shell() {
           <Route path="/reglages" element={<Settings />} />
           <Route path="/sauvegarde" element={<Backup />} />
           <Route path="/livre" element={<Book />} />
+          <Route path="/projet-naissance" element={<BirthPlan />} />
+          <Route path="/nuit" element={<Night />} />
           <Route path="*" element={<Home />} />
         </Routes>
           </Suspense>
         </ErrorBoundary>
       </main>
-      <TabBar onQuick={() => setQuick(true)} />
+      {!night && <TabBar onQuick={() => setQuick(true)} />}
       <QuickSheet open={quick} onClose={() => setQuick(false)} />
     </>
   )

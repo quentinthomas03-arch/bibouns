@@ -133,6 +133,17 @@ Chaque catégorie se coupe séparément, par personne.
 
 **Comment ça marche** : une fonction Supabase (`supabase/functions/push`) est appelée toutes les 5 minutes par une tâche planifiée de la base (`pg_cron`). Elle calcule les rappels (`_shared/reminders.ts`, testé) puis envoie des messages **chiffrés de bout en bout** (Web Push, RFC 8291 et 8292). Le chiffrement est fait sans bibliothèque externe, et nos tests le valident avec l'implémentation de référence. Apple et Google ne voient que des données chiffrées. Les clés VAPID sont créées automatiquement au premier déploiement et restent dans la base, inaccessibles à l'appli. Un journal empêche tout envoi en double.
 
+## 3 quater. Les extras
+
+| Fonction | Où | En bref |
+|---|---|---|
+| 📅 **Calendrier iPhone** | Réglages → Calendrier iPhone | RDV (avec leurs rappels), échéances des listes et vaccins conseillés dans l'app Calendrier. Lien personnel en lecture seule (fonction `calendar`), révocable. |
+| 📜 **Projet de naissance** | Plus → Projet de naissance (et Jour J) | Souhaits à cocher à deux, envoyés en texte à la sage-femme ou à la maternité. |
+| 💛 **Suivi des parents** | Suivi → Nous (après la naissance) | Un point par jour pour chacun (humeur, énergie, ressentis). Une carte d'aide apparaît si plusieurs jours difficiles s'enchaînent sur plus d'une semaine, avec le 3114. |
+| 🌙 **Mode nuit** | Accueil (après la naissance) ou Plus | Noir et rouge tamisé, grande horloge, gros boutons, écran maintenu allumé. |
+| 💌 **Lettres à Biboun** | Souvenirs → Lettres | Lettres datées, « scellées » si on veut jusqu'au 1er anniversaire, aux 18 ans ou à une date libre. C'est une enveloppe symbolique, pas du chiffrement. |
+| 🎁 **Liste de naissance** | Une liste → icône cadeau | Lien public pour la famille : noms des articles seulement (ni prix, ni notes). Chacun réserve avec son prénom. Lien désactivable. |
+
 ## 4. Sauvegarder et exporter
 
 *Réglages → Sauvegarde & données* :

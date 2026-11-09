@@ -12,13 +12,15 @@ import { useNow } from '@/app/useNow'
 import { usePhase } from '@/app/phase'
 import { addDays, balanceMessage, daySummary, formatDuration, formatTime, nights, NIGHT_LENGTH_MIN, shareStats, startOfDay } from '@/lib/baby'
 import { BABY_EMPTY, KIND_EMOJI } from '@/content/baby'
+import { ParentsTab } from '@/components/baby/ParentsTab'
 
-type Tab = 'jour' | 'semaine' | 'nuits' | 'duo'
+type Tab = 'jour' | 'semaine' | 'nuits' | 'duo' | 'nous'
 const TABS: [Tab, string][] = [
   ['jour', 'Jour'],
-  ['semaine', 'Semaine'],
+  ['semaine', 'Sem.'],
   ['nuits', 'Nuits'],
   ['duo', 'Duo'],
+  ['nous', 'Nous'],
 ]
 
 /** Onglet Suivi après la naissance. */
@@ -40,6 +42,7 @@ export function BabyTrack() {
       {tab === 'semaine' && <Week />}
       {tab === 'nuits' && <Nights />}
       {tab === 'duo' && <Duo />}
+      {tab === 'nous' && <ParentsTab />}
     </div>
   )
 }

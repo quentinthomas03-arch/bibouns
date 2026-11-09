@@ -82,6 +82,12 @@ export function DayJ() {
       {(laborStarted || born) && <ContractionTimer />}
 
       <Alerts />
+      <Link to="/projet-naissance" className="press mt-3 flex items-center gap-3 rounded-3xl bg-mustard/40 p-4 shadow-soft">
+        <span className="text-2xl" aria-hidden>
+          📜
+        </span>
+        <span className="flex-1 font-bold">Notre projet de naissance</span>
+      </Link>
       <Calls />
       <Route />
       <Bags />

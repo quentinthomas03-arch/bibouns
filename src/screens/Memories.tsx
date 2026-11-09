@@ -17,8 +17,9 @@ import { deletePhoto, downloadPhoto, uploadPhoto } from '@/lib/photos'
 import { groupByMonth, monthCardTitle, type MonthGroup } from '@/lib/memories'
 import { drawMonthlyCard, shareFile } from '@/lib/card'
 import { CARD_FOOTER, FIRSTS, MEMORY_LIMITS } from '@/content/memories'
+import { LettersTab } from '@/components/LettersTab'
 
-type Tab = 'journal' | 'mois' | 'premieres'
+type Tab = 'journal' | 'mois' | 'premieres' | 'lettres'
 interface Memory extends BaseRow {
   memory_date: string
   title?: string | null
@@ -61,7 +62,8 @@ export function Memories() {
           [
             ['journal', 'Journal'],
             ['mois', 'Par mois'],
-            ['premieres', 'Premières fois'],
+            ['premieres', 'Premières'],
+            ['lettres', 'Lettres'],
           ] as [Tab, string][]
         ).map(([v, l]) => (
           <button key={v} role="tab" aria-selected={tab === v} onClick={() => setParams({ tab: v }, { replace: true })} className={`press flex-1 min-h-11 rounded-xl text-sm font-bold ${tab === v ? 'bg-surface shadow-soft' : 'text-ink-soft'}`}>
@@ -75,6 +77,7 @@ export function Memories() {
 
       {tab === 'journal' && <Journal memories={memories} onEdit={setEditing} onView={setViewer} />}
       {tab === 'mois' && <ByMonth memories={memories} onView={setViewer} />}
+      {tab === 'lettres' && <LettersTab />}
       {tab === 'premieres' && <Firsts memories={memories} onAdd={(k) => setEditing({ first_kind: k })} onEdit={setEditing} />}
 
       <MemorySheet initial={editing} onClose={() => setEditing(null)} />

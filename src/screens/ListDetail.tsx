@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, Plus, Trash2, CalendarClock, StickyNote } from 'lucide-react'
+import { ArrowLeft, Check, Gift, Plus, Trash2, CalendarClock, StickyNote } from 'lucide-react'
+import { WishlistShare } from '@/components/WishlistShare'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -34,6 +35,7 @@ export function ListDetail() {
   const [filter, setFilter] = useState<Filter>('all')
   const [editing, setEditing] = useState<Item | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [sharing, setSharing] = useState(false)
 
   const sorted = useMemo(() => {
     const all = [...(items ?? [])].sort((a, b) => Number(a.done) - Number(b.done) || a.position - b.position)
@@ -72,6 +74,9 @@ export function ListDetail() {
           <span aria-hidden>{list?.emoji} </span>
           {list?.title}
         </h1>
+        <button onClick={() => setSharing(true)} aria-label="Partager comme liste de naissance" className="press size-11 grid place-items-center rounded-full text-primary">
+          <Gift size={20} />
+        </button>
         <button onClick={() => setConfirmDelete(true)} aria-label="Supprimer la liste" className="press size-11 grid place-items-center rounded-full text-ink-soft">
           <Trash2 size={20} />
         </button>
@@ -158,6 +163,7 @@ export function ListDetail() {
                   {i.budget_cents ? <span>{euros(i.budget_cents)}</span> : null}
                   {i.note && <StickyNote size={13} aria-label="Note" />}
                   {i.done && doneBy && <span>fait par {doneBy.first_name}</span>}
+                  {i.reserved_by && !i.done && <span className="font-bold text-primary">🎁 réservé par {i.reserved_by}</span>}
                 </span>
               </button>
               {assignee && <Avatar emoji={assignee.avatar} color={assignee.color} size={30} label={`Pour ${assignee.first_name}`} />}
@@ -168,6 +174,8 @@ export function ListDetail() {
       </ul>
 
       <ItemSheet item={editing} onClose={() => setEditing(null)} onDelete={async (it) => { await remove('checklist_items', it.id); setEditing(null); toast('Supprimé') }} />
+
+      {id && <WishlistShare checklistId={id} open={sharing} onClose={() => setSharing(false)} />}
 
       <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Supprimer la liste ?">
         <p className="text-ink-soft mb-4">La liste et ses éléments disparaîtront des deux téléphones.</p>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart, Rocket, Stethoscope, Camera, Settings } from 'lucide-react'
+import { Heart, Rocket, Stethoscope, Camera, Settings, ScrollText, Moon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 const items: Array<{ to: string; label: string; icon: ReactNode; color: string; soon?: string }> = [
@@ -7,6 +7,8 @@ const items: Array<{ to: string; label: string; icon: ReactNode; color: string; 
   { to: '/jour-j', label: 'Jour J', icon: <Rocket />, color: 'bg-apricot' },
   { to: '/sante', label: 'Carnet de santé', icon: <Stethoscope />, color: 'bg-sage' },
   { to: '/souvenirs', label: 'Souvenirs', icon: <Camera />, color: 'bg-plum' },
+  { to: '/projet-naissance', label: 'Projet de naissance', icon: <ScrollText />, color: 'bg-mustard' },
+  { to: '/nuit', label: 'Mode nuit', icon: <Moon />, color: 'bg-surface-2' },
   { to: '/reglages', label: 'Réglages', icon: <Settings />, color: 'bg-surface-2' },
 ]
 

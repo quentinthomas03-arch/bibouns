@@ -42,6 +42,9 @@ export function BabySummary({ name, bornAt }: { name: string; bornAt: string | n
           <p className="text-ink-soft font-semibold">{bornAt ? formatBabyAge(babyAge(new Date(bornAt), now)) : 'Ajoute la date de naissance dans les réglages'}</p>
         </div>
       </Card>
+      <Link to="/nuit" className="press mt-4 flex items-center justify-center gap-2 rounded-3xl bg-ink text-bg min-h-14 font-bold">
+        🌙 Mode nuit
+      </Link>
       <div className="mt-4">
         <RunningTimers />
       </div>
