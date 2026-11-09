@@ -16,6 +16,7 @@ import { assess, ageInDays, formatPercentile, GROWTH_SOURCE, type GrowthKey, typ
 import { examSchedule, rsvDate, vaccineSchedule, type ScheduledDose } from '@/lib/health'
 import { deletePhoto, uploadPhoto } from '@/lib/photos'
 import { PrivatePhoto } from '@/components/PrivatePhoto'
+import { QuestionsPanel } from '@/components/Questions'
 import { DOC_KINDS, EXAMS_DISCLAIMER, GROWTH_NOTE, RSV_INFO, VACCINE_DISCLAIMER } from '@/content/health'
 
 type Tab = 'croissance' | 'vaccins' | 'rdv' | 'documents'
@@ -351,6 +352,7 @@ function BabyAppointments({ birth }: { birth: string }) {
 
   return (
     <section className="mt-4 flex flex-col gap-3">
+      <QuestionsPanel subject="baby" />
       <Button block icon={<Plus size={20} />} onClick={() => setEditing({ subject: 'baby' })}>
         Ajouter un rendez-vous
       </Button>

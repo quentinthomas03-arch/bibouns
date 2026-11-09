@@ -130,6 +130,83 @@ export async function drawMonthlyCard(input: CardInput): Promise<Blob> {
   return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('carte impossible'))), 'image/jpeg', 0.9))
 }
 
+export interface AnnouncementInput {
+  name: string
+  sex: 'f' | 'm' | 'x'
+  bornAt: string // ISO
+  weightG?: number | null
+  lengthMm?: number | null
+  parents: string
+  photo?: Blob | null
+}
+
+/** Faire-part de naissance (1080 × 1350), dessiné sur le téléphone. */
+export async function drawAnnouncement(a: AnnouncementInput): Promise<Blob> {
+  const W = 1080
+  const H = 1350
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')!
+  await document.fonts?.ready
+  ctx.fillStyle = '#FFF6EF'
+  ctx.fillRect(0, 0, W, H)
+  const dot = (x: number, y: number, r: number, c: string) => {
+    ctx.fillStyle = c
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  dot(120, 110, 200, '#F8D6C6')
+  dot(1000, 1250, 240, '#F7B98A88')
+  dot(980, 140, 70, '#F4C3BA')
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#7A5348'
+  ctx.font = '700 46px "Nunito Variable", "Nunito", system-ui, sans-serif'
+  ctx.fillText(a.sex === 'f' ? 'Bienvenue à' : a.sex === 'm' ? 'Bienvenue à' : 'Bienvenue', W / 2, 150)
+  ctx.fillStyle = '#B04E2C'
+  const size = a.name.length > 10 ? 120 : 150
+  ctx.font = `600 ${size}px "Fredoka Variable", "Fredoka", system-ui, sans-serif`
+  ctx.fillText(a.name, W / 2, 150 + size + 10)
+
+  // photo ronde (ou mascotte)
+  const cx = W / 2
+  const cy = 680
+  const r = 260
+  ctx.save()
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)
+  ctx.closePath()
+  ctx.clip()
+  ctx.fillStyle = '#FBE6DA'
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2)
+  const img = a.photo
+    ? await loadImage(URL.createObjectURL(a.photo))
+    : await loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(BIBOUN_SVG))
+  const s = Math.max((r * 2) / img.width, (r * 2) / img.height) * (a.photo ? 1 : 0.8)
+  ctx.drawImage(img, cx - (img.width * s) / 2, cy - (img.height * s) / 2, img.width * s, img.height * s)
+  ctx.restore()
+  ctx.strokeStyle = '#F8D6C6'
+  ctx.lineWidth = 16
+  ctx.beginPath()
+  ctx.arc(cx, cy, r + 8, 0, Math.PI * 2)
+  ctx.stroke()
+
+  const d = new Date(a.bornAt)
+  ctx.fillStyle = '#3A2621'
+  ctx.font = '700 50px "Nunito Variable", "Nunito", system-ui, sans-serif'
+  const born = a.sex === 'f' ? 'née' : a.sex === 'm' ? 'né' : 'né·e'
+  ctx.fillText(`${born} le ${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`, W / 2, 1040)
+  const facts = [`à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`, a.weightG ? `${(a.weightG / 1000).toLocaleString('fr-FR')} kg` : '', a.lengthMm ? `${(a.lengthMm / 10).toLocaleString('fr-FR')} cm` : ''].filter(Boolean)
+  ctx.fillStyle = '#7A5348'
+  ctx.font = '600 44px "Nunito Variable", "Nunito", system-ui, sans-serif'
+  ctx.fillText(facts.join('  ·  '), W / 2, 1110)
+  ctx.fillStyle = '#B04E2C'
+  ctx.font = '600 52px "Fredoka Variable", "Fredoka", system-ui, sans-serif'
+  ctx.fillText(`Avec tout l’amour de ${a.parents} 🧡`, W / 2, 1230)
+  return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('faire-part impossible'))), 'image/jpeg', 0.92))
+}
+
 /** Partage (ou enregistre dans Photos) un fichier via le menu de partage iOS. */
 export async function shareFile(blob: Blob, filename: string, title?: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
   const file = new File([blob], filename, { type: blob.type || 'image/jpeg' })

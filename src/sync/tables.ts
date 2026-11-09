@@ -41,6 +41,7 @@ export const TABLES = {
   memories: { mode: 'rw', indexes: ['memory_date'] },
   parent_checkins: { mode: 'rw', indexes: ['entry_date'] },
   letters: { mode: 'rw', indexes: ['written_on'] },
+  questions: { mode: 'rw', indexes: ['subject'] },
 } satisfies Record<string, TableDef>
 
 export type TableName = keyof typeof TABLES

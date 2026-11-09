@@ -8,6 +8,7 @@ import { babyAge, formatBabyAge } from '@/lib/pregnancy'
 import { daySummary, formatDuration, lastOf, running, timeAgo } from '@/lib/baby'
 import { describeEvent } from './describe'
 import { RunningTimers } from './RunningTimers'
+import { NightShiftCard } from './NightShiftCard'
 
 /** Accueil "Après" : âge de bébé + dernier repas / couche / sommeil + journée. */
 export function BabySummary({ name, bornAt }: { name: string; bornAt: string | null }) {
@@ -42,6 +43,7 @@ export function BabySummary({ name, bornAt }: { name: string; bornAt: string | n
           <p className="text-ink-soft font-semibold">{bornAt ? formatBabyAge(babyAge(new Date(bornAt), now)) : 'Ajoute la date de naissance dans les réglages'}</p>
         </div>
       </Card>
+      <NightShiftCard />
       <Link to="/nuit" className="press mt-4 flex items-center justify-center gap-2 rounded-3xl bg-ink text-bg min-h-14 font-bold">
         🌙 Mode nuit
       </Link>

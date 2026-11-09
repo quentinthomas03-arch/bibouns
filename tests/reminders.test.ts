@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { computeReminders, parisParts, type ReminderInput } from '../supabase/functions/_shared/reminders'
 import { VACCINE_DOSES } from '../supabase/functions/_shared/vaccines'
 import { VACCINES } from '../src/content/health'
+import { onDuty } from '../supabase/functions/_shared/reminders'
+import { whoOnNight } from '../src/lib/nightshift'
 
 const base = (now: string, over: Partial<ReminderInput> = {}): ReminderInput => ({
   now: new Date(now),
@@ -66,6 +68,25 @@ describe('rappels push', () => {
     const r = computeReminders(base('2027-06-01T07:20:00Z'))
     expect(r.map((x) => x.key)).toEqual(['backup:2027-06'])
     expect(computeReminders(base('2027-06-02T07:20:00Z'))).toHaveLength(0)
+  })
+
+  it('tour de garde : notification à 21 h (Paris) au parent de garde et à l’autre', () => {
+    const baby = { first_name: 'Louise', born_at: '2027-05-04T01:12:00Z' }
+    const nightShift = { enabled: true, startMember: 'a', startDate: '2027-05-10', overrides: {} }
+    const r = computeReminders(base('2027-05-11T19:05:00Z', { baby, nightShift })) // 21 h 05 à Paris (été)
+    expect(r.map((x) => [x.key, x.memberIds])).toEqual([
+      ['night:2027-05-11:duty', ['q']],
+      ['night:2027-05-11:rest', ['a']],
+    ])
+    expect(computeReminders(base('2027-05-11T19:05:00Z', { baby, nightShift: { ...nightShift, enabled: false } }))).toHaveLength(0)
+  })
+
+  it('la règle du tour de garde est identique côté serveur et côté appli', () => {
+    const cfg = { enabled: true, startMember: 'a', startDate: '2027-05-10', overrides: { '2027-05-14': 'a' } }
+    for (let d = 1; d <= 28; d++) {
+      const date = `2027-05-${String(d).padStart(2, '0')}`
+      expect(onDuty(cfg, ['q', 'a'], date)).toBe(whoOnNight(cfg, ['q', 'a'], date))
+    }
   })
 
   it('le calendrier vaccinal du serveur est identique à celui de l’appli', () => {

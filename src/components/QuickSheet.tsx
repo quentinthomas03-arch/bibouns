@@ -8,12 +8,13 @@ import { useRows, useStore } from '@/sync/store'
 import { useToast } from './ui/Toast'
 import { AppointmentSheet, JournalSheet, MeasureSheet } from './pregnancy/Sheets'
 import { QuickBaby } from './baby/QuickBaby'
+import { QuestionSheet } from './Questions'
 import { between, type ChecklistRow, type ItemRow } from '@/lib/checklists'
 import type { BaseRow } from '@/sync/tables'
 import { notes, quickActions } from '@/content/fr'
 import { notifyPartner } from '@/lib/push'
 
-type Open = null | 'rdv' | 'journal' | 'measure' | 'task'
+type Open = null | 'rdv' | 'journal' | 'measure' | 'task' | 'question'
 
 /**
  * Ajout rapide (bouton central) : 1 tap pour choisir, 1 tap pour valider.
@@ -57,6 +58,7 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
             { label: 'Journal', emoji: '📝', onClick: () => go('journal') },
             { label: 'Mesure', emoji: '⚖️', onClick: () => go('measure') },
             { label: 'Tâche', emoji: '✅', onClick: () => go('task') },
+            { label: 'Question', emoji: '❓', onClick: () => go('question') },
           ]
 
   async function sendNote(body: string) {
@@ -72,7 +74,7 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
     <>
       <Sheet open={open} onClose={onClose} title={quickActions.title}>
         {phase === 'after' ? (
-          <QuickBaby onDone={onClose} />
+          <QuickBaby onDone={onClose} onQuestion={() => go('question')} />
         ) : (
         <div className="grid grid-cols-2 gap-3">
           {actions.map((a) => (
@@ -119,6 +121,7 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
       <JournalSheet open={sub === 'journal'} onClose={() => setSub(null)} />
       <MeasureSheet open={sub === 'measure'} onClose={() => setSub(null)} />
       <TaskSheet open={sub === 'task'} onClose={() => setSub(null)} />
+      <QuestionSheet open={sub === 'question'} onClose={() => setSub(null)} subject={phase === 'after' ? 'baby' : 'pregnancy'} />
     </>
   )
 }

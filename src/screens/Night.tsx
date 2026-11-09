@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { useBabyActions, useBabyEvents, useFeeding } from '@/app/baby'
@@ -6,6 +6,7 @@ import { useNow } from '@/app/useNow'
 import { usePhase } from '@/app/phase'
 import { formatDuration, lastBottleMl, lastOf, nextSide, running, timeAgo } from '@/lib/baby'
 import { describeEvent } from '@/components/baby/describe'
+import { startNoise, type NoiseHandle } from '@/lib/noise'
 
 /**
  * Écran de nuit : noir et rouge très atténué (préserve la vision de nuit et
@@ -21,6 +22,19 @@ export function Night() {
   const { log, start, stop } = useBabyActions()
   const now = useNow(1000)
   const [flash, setFlash] = useState<string | null>(null)
+  const noise = useRef<NoiseHandle | null>(null)
+  const [noiseEnd, setNoiseEnd] = useState<number | 'loop' | null>(null)
+  useEffect(() => () => noise.current?.stop(), [])
+  const playNoise = (minutes: number | null) => {
+    noise.current?.stop()
+    noise.current = startNoise(minutes, 0.35, () => setNoiseEnd(null))
+    setNoiseEnd(minutes ? Date.now() + minutes * 60_000 : 'loop')
+  }
+  const stopNoise = () => {
+    noise.current?.stop()
+    noise.current = null
+    setNoiseEnd(null)
+  }
   const feed = running(events, 'feed')
   const sleep = running(events, 'sleep')
   const lastFeed = lastOf(events, 'feed')
@@ -88,6 +102,27 @@ export function Night() {
           <Btn label="Pipi" onClick={() => act('Pipi noté', () => log('diaper', { pee: true, poo: false }))} />
           <Btn label="Caca" onClick={() => act('Caca noté', () => log('diaper', { pee: false, poo: true }))} />
           <Btn label="Les deux" onClick={() => act('Couche notée', () => log('diaper', { pee: true, poo: true }))} />
+        </div>
+        <div className="rounded-3xl p-3 flex flex-col gap-2" style={{ background: C.btn, border: `2px solid ${C.line}` }}>
+          <p className="font-bold">
+            🔊 Bruit doux{noiseEnd === 'loop' ? ' · en continu' : noiseEnd ? ` · encore ${Math.max(1, Math.ceil((noiseEnd - now.getTime()) / 60000))} min` : ''}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {noiseEnd ? (
+              <button onClick={stopNoise} className="press min-h-12 px-5 rounded-full font-bold" style={{ background: C.on, color: C.text }}>
+                ⏹ Arrêter
+              </button>
+            ) : (
+              ([15, 30, 60, null] as (number | null)[]).map((m) => (
+                <button key={String(m)} onClick={() => playNoise(m)} className="press min-h-12 px-4 rounded-full font-bold" style={{ border: `2px solid ${C.line}`, color: C.text }}>
+                  {m ? `${m} min` : 'Sans fin'}
+                </button>
+              ))
+            )}
+          </div>
+          <p className="text-xs" style={{ color: C.dim }}>
+            Volume doux, à régler avec les boutons de l’iPhone. Garde le téléphone à distance du lit de bébé.
+          </p>
         </div>
         <p className="text-center text-xs mt-auto" style={{ color: C.dim }}>
           Astuce : baisse la luminosité au minimum. Tout est synchronisé avec ton binôme.

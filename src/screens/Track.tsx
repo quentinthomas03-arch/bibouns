@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Biboun } from '@/components/Biboun'
 import { BabyTrack } from './BabyTrack'
+import { QuestionsPanel } from '@/components/Questions'
 import { LineChart } from '@/components/charts/LineChart'
 import { AppointmentSheet, JournalSheet, MeasureSheet, type Appointment, type JournalEntry, type Measurement } from '@/components/pregnancy/Sheets'
 import { usePhase } from '@/app/phase'
@@ -74,6 +75,9 @@ function Appointments() {
 
   return (
     <section className="mt-4">
+      <div className="mb-3">
+        <QuestionsPanel subject="pregnancy" />
+      </div>
       <Button block icon={<Plus size={20} />} onClick={() => setEditing({})}>
         Ajouter un rendez-vous
       </Button>

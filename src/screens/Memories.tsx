@@ -18,6 +18,7 @@ import { groupByMonth, monthCardTitle, type MonthGroup } from '@/lib/memories'
 import { drawMonthlyCard, shareFile } from '@/lib/card'
 import { CARD_FOOTER, FIRSTS, MEMORY_LIMITS } from '@/content/memories'
 import { LettersTab } from '@/components/LettersTab'
+import { AnnouncementSheet } from '@/components/AnnouncementSheet'
 
 type Tab = 'journal' | 'mois' | 'premieres' | 'lettres'
 interface Memory extends BaseRow {
@@ -135,11 +136,23 @@ function Journal({ memories, onEdit, onView }: { memories: Memory[]; onEdit: (m:
 // ------------------------------------------------------------------ mois par mois
 function ByMonth({ memories, onView }: { memories: Memory[]; onView: (p: string) => void }) {
   const { baby } = usePhase()
+  const [announce, setAnnounce] = useState(false)
   const birth = (baby?.born_at as string | undefined)?.slice(0, 10) ?? null
   const groups = groupByMonth(memories, birth)
-  if (groups.length === 0) return <p className="text-center text-ink-soft py-10">Ajoute un premier souvenir pour voir l’album se remplir.</p>
   return (
     <div className="mt-4 flex flex-col gap-4">
+      {birth && (
+        <>
+          <button onClick={() => setAnnounce(true)} className="press rounded-3xl bg-primary-soft p-4 flex items-center gap-3 text-left shadow-soft">
+            <span className="text-3xl" aria-hidden>
+              🖼️
+            </span>
+            <span className="flex-1 font-bold">Faire-part de naissance</span>
+          </button>
+          <AnnouncementSheet open={announce} onClose={() => setAnnounce(false)} />
+        </>
+      )}
+      {groups.length === 0 && <p className="text-center text-ink-soft py-10">Ajoute un premier souvenir pour voir l’album se remplir.</p>}
       {groups.map((g) => (
         <MonthCard key={g.key} group={g} onView={onView} />
       ))}

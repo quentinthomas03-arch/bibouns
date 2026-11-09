@@ -87,12 +87,13 @@ async function tick(db: Db, keys: VapidKeys) {
   let total = 0
   for (const h of households ?? []) {
     const hid = h.id as string
-    const [members, appts, items, babies, vaccines] = await Promise.all([
-      db.from('members').select('id, first_name').eq('household_id', hid),
+    const [members, appts, items, babies, vaccines, shift] = await Promise.all([
+      db.from('members').select('id, first_name').eq('household_id', hid).order('created_at'),
       db.from('appointments').select('id, title, starts_at, location, remind_minutes, done, subject').eq('household_id', hid).is('deleted_at', null).gte('starts_at', now.toISOString()),
       db.from('checklist_items').select('id, label, due_date, done, assignee').eq('household_id', hid).is('deleted_at', null).eq('done', false).not('due_date', 'is', null),
       db.from('babies').select('first_name, born_at').eq('household_id', hid).is('deleted_at', null).limit(1),
       db.from('vaccines').select('code, done_on').eq('household_id', hid).is('deleted_at', null),
+      db.from('settings').select('value').eq('household_id', hid).eq('key', 'night_shift').is('deleted_at', null).maybeSingle(),
     ])
     const reminders = computeReminders({
       now,
@@ -102,6 +103,7 @@ async function tick(db: Db, keys: VapidKeys) {
       baby: babies.data?.[0] ?? null,
       vaccineDoses: VACCINE_DOSES,
       vaccinesDone: (vaccines.data ?? []).filter((v) => v.done_on).map((v) => v.code),
+      nightShift: shift.data?.value ?? null,
     })
     for (const r of reminders) {
       // anti-doublon : la clé n'est insérée qu'une fois

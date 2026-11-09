@@ -142,6 +142,10 @@ Chaque catégorie se coupe séparément, par personne.
 | 💛 **Suivi des parents** | Suivi → Nous (après la naissance) | Un point par jour pour chacun (humeur, énergie, ressentis). Une carte d'aide apparaît si plusieurs jours difficiles s'enchaînent sur plus d'une semaine, avec le 3114. |
 | 🌙 **Mode nuit** | Accueil (après la naissance) ou Plus | Noir et rouge tamisé, grande horloge, gros boutons, écran maintenu allumé. |
 | 💌 **Lettres à Biboun** | Souvenirs → Lettres | Lettres datées, « scellées » si on veut jusqu'au 1er anniversaire, aux 18 ans ou à une date libre. C'est une enveloppe symbolique, pas du chiffrement. |
+| 🖼️ **Faire-part** | Jour J (après « Bébé est né ») ou Souvenirs → Par mois | Image prête à envoyer (photo, prénom, date, poids, taille), dessinée sur le téléphone. |
+| ❓ **Carnet de questions** | Bouton + → Question | Les questions notées au fil de l'eau ressortent dans l'onglet RDV (grossesse) ou Carnet de santé → RDV (bébé), à cocher avec la réponse. |
+| 🌙 **Tour de garde des nuits** | Accueil (après la naissance) | Une nuit chacun, échange en 1 tap, notification à 21 h (« c'est ton tour » / « repose-toi »). |
+| 🔊 **Bruit doux** | Mode nuit | Bruit brun généré par le téléphone, arrêt automatique (15 min, 30 min, 1 h ou sans fin). |
 | 🎁 **Liste de naissance** | Une liste → icône cadeau | Lien public pour la famille : noms des articles seulement (ni prix, ni notes). Chacun réserve avec son prénom. Lien désactivable. |
 
 ## 4. Sauvegarder et exporter

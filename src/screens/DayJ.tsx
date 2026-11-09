@@ -16,6 +16,7 @@ import type { BaseRow } from '@/sync/tables'
 import { listStats, type ChecklistRow, type ItemRow } from '@/lib/checklists'
 import { ALERTS, ALERT_TITLE, DEFAULT_CONTACT_ROLES, DOCUMENTS, EMERGENCY_NUMBERS, LAUNCH_CONFIRM, messages } from '@/content/dday'
 import { ContractionTimer } from '@/components/ContractionTimer'
+import { AnnouncementSheet } from '@/components/AnnouncementSheet'
 
 interface Contact {
   id: string
@@ -290,6 +291,7 @@ export function BirthSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const [length, setLength] = useState('')
   const [head, setHead] = useState('')
   const [done, setDone] = useState<string | null>(null)
+  const [announce, setAnnounce] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -354,6 +356,10 @@ export function BirthSheet({ open, onClose }: { open: boolean; onClose: () => vo
           <Button block size="xl" icon={<MessageCircle size={22} />} onClick={() => share(done)}>
             Envoyer à la famille
           </Button>
+          <Button variant="soft" block onClick={() => setAnnounce(true)}>
+            🖼️ Créer le faire-part
+          </Button>
+          <AnnouncementSheet open={announce} onClose={() => setAnnounce(false)} />
           <Button
             variant="soft"
             block

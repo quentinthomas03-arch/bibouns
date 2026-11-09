@@ -15,8 +15,25 @@ export interface Prefs {
   assigned: boolean
   notes: boolean
   backup: boolean
+  nights: boolean
 }
-export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true }
+export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true, nights: true }
+
+export interface NightShiftCfg {
+  enabled: boolean
+  startMember: string
+  startDate: string
+  overrides: Record<string, string>
+}
+
+/** Même règle que src/lib/nightshift.ts (vérifié par un test). */
+export function onDuty(cfg: NightShiftCfg | null | undefined, members: string[], date: string): string | null {
+  if (!cfg?.enabled || members.length < 2) return null
+  if (cfg.overrides?.[date] && members.includes(cfg.overrides[date])) return cfg.overrides[date]
+  const startIdx = Math.max(0, members.indexOf(cfg.startMember))
+  const diff = dayDiff(date, cfg.startDate)
+  return members[(((startIdx + diff) % members.length) + members.length) % members.length]
+}
 
 export interface Reminder {
   key: string
@@ -35,6 +52,7 @@ export interface ReminderInput {
   baby: { first_name?: string | null; born_at?: string | null } | null
   vaccineDoses: { code: string; label: string; months: number }[]
   vaccinesDone: string[]
+  nightShift?: NightShiftCfg | null
 }
 
 const TZ = 'Europe/Paris'
@@ -87,6 +105,18 @@ export function computeReminders(input: ReminderInput): Reminder[] {
           category: 'appointments',
         })
       }
+    }
+  }
+
+  // Tour de garde : à 21 h, heure de Paris (bébé né uniquement)
+  if (hour === 21 && input.baby?.born_at) {
+    const ids = input.members.map((m) => m.id)
+    const duty = onDuty(input.nightShift, ids, today)
+    if (duty) {
+      const name = input.members.find((m) => m.id === duty)?.first_name ?? ''
+      out.push({ key: `night:${today}:duty`, memberIds: [duty], title: '🌙 C’est ton tour cette nuit', body: 'Mode nuit prêt dans l’appli. Courage, et bonne nuit quand même 💛', url: './#/nuit', category: 'nights' })
+      const others = ids.filter((id) => id !== duty)
+      if (others.length) out.push({ key: `night:${today}:rest`, memberIds: others, title: '😴 Repos cette nuit', body: `${name} veille sur Biboun. Profite pour dormir !`, url: './#/', category: 'nights' })
     }
   }
 

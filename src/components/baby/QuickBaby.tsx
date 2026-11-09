@@ -18,7 +18,7 @@ interface Action {
  * Saisie bébé en 1 tap (2 taps avec le bouton +). Les détails se
  * complètent ensuite si besoin (heure, couleur, quantité…).
  */
-export function QuickBaby({ onDone }: { onDone: () => void }) {
+export function QuickBaby({ onDone, onQuestion }: { onDone: () => void; onQuestion?: () => void }) {
   const events = useBabyEvents()
   const feeding = useFeeding()
   const meds = useMeds()
@@ -79,6 +79,11 @@ export function QuickBaby({ onDone }: { onDone: () => void }) {
             {l}
           </button>
         ))}
+        {onQuestion && (
+          <button onClick={onQuestion} className="press rounded-full bg-surface-2 px-4 min-h-11 font-semibold text-sm">
+            ❓ Question pour le pédiatre
+          </button>
+        )}
       </div>
       <EventSheet open={!!details} kind={details ?? 'feed'} onClose={() => { setDetails(null); onDone() }} />
     </div>
