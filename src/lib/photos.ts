@@ -65,3 +65,21 @@ export async function downloadPhoto(path: string): Promise<Blob> {
   if (error || !data) throw new Error('Photo indisponible (réseau ?)')
   return data
 }
+
+/** Supprime tous les fichiers du foyer (avant la suppression définitive). */
+export async function deleteAllFiles(householdId: string, onProgress?: (n: number) => void): Promise<number> {
+  if (!supabase) return 0
+  let removed = 0
+  for (const folder of ['memories', 'documents']) {
+    for (;;) {
+      const { data, error } = await supabase.storage.from(BUCKET).list(`${householdId}/${folder}`, { limit: 100 })
+      if (error) throw new Error('Impossible de lister les photos (réseau ?)')
+      if (!data?.length) break
+      const { error: e2 } = await supabase.storage.from(BUCKET).remove(data.map((f) => `${householdId}/${folder}/${f.name}`))
+      if (e2) throw new Error('Impossible de supprimer les photos (réseau ?)')
+      removed += data.length
+      onProgress?.(removed)
+    }
+  }
+  return removed
+}

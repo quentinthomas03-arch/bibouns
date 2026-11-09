@@ -117,3 +117,35 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* ---- Impression / PDF du livre : toujours en clair, une page par mois ---- */
+@media print {
+  :root,
+  .dark {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #fbe6da;
+    --ink: #3a2621;
+    --ink-soft: #7a5348;
+    --primary: #b04e2c;
+    --line: #f0d5c6;
+    color-scheme: light;
+  }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  body {
+    background: #fff;
+  }
+  nav,
+  [aria-live] {
+    display: none !important;
+  }
+  .book-page {
+    break-after: page;
+  }
+  .book img {
+    break-inside: avoid;
+  }
+}

@@ -62,6 +62,12 @@ describe('rappels push', () => {
     ])
   })
 
+  it('rappel de sauvegarde le 1er du mois à 9 h', () => {
+    const r = computeReminders(base('2027-06-01T07:20:00Z'))
+    expect(r.map((x) => x.key)).toEqual(['backup:2027-06'])
+    expect(computeReminders(base('2027-06-02T07:20:00Z'))).toHaveLength(0)
+  })
+
   it('le calendrier vaccinal du serveur est identique à celui de l’appli', () => {
     expect(VACCINE_DOSES.map((v) => [v.code, v.months])).toEqual(VACCINES.map((v) => [v.code, v.months]))
   })

@@ -4,6 +4,7 @@
  *   - rendez-vous : à l'heure choisie (la veille, 2 h avant…)
  *   - vaccins : 7 jours avant et le jour J, à 9 h (heure de Paris)
  *   - échéances des listes : 3 jours avant et le jour J, à 9 h
+ *   - sauvegarde : le 1er de chaque mois, à 9 h
  * Chaque rappel a une clé unique : il n'est jamais envoyé deux fois.
  */
 
@@ -13,8 +14,9 @@ export interface Prefs {
   deadlines: boolean
   assigned: boolean
   notes: boolean
+  backup: boolean
 }
-export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true }
+export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true }
 
 export interface Reminder {
   key: string
@@ -89,6 +91,18 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   }
 
   if (!morning) return out
+
+  // Rappel mensuel d'export (l'offre gratuite n'a pas de sauvegarde téléchargeable)
+  if (today.endsWith('-01')) {
+    out.push({
+      key: `backup:${today.slice(0, 7)}`,
+      memberIds: all,
+      title: '💾 Petite sauvegarde du mois ?',
+      body: 'Exportez vos données et vos photos (Réglages → Sauvegarde) et rangez le fichier dans iCloud Drive.',
+      url: './#/sauvegarde',
+      category: 'backup',
+    })
+  }
 
   // Vaccins (bébé né uniquement)
   if (input.baby?.born_at) {

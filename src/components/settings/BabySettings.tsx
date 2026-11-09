@@ -30,7 +30,7 @@ export function BabySettings() {
   }, [baby?.first_name, baby?.sex, baby?.born_at])
 
   const saveBaby = async (p: Record<string, unknown>) => {
-    await save('babies', { id: (baby?.id as string) ?? stableId(householdId, 'baby'), first_name: firstName.trim() || null, sex, born_at: bornAt ? new Date(bornAt).toISOString() : null, ...p })
+    await save('babies', { id: (baby?.id as string) ?? stableId(householdId, 'baby'), first_name: firstName.trim() || null, sex, born_at: bornAt ? new Date(bornAt).toISOString() : null, deleted_at: null, ...p })
     toast('Enregistré ✓')
   }
 

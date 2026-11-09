@@ -396,9 +396,10 @@ export function BirthSheet({ open, onClose }: { open: boolean; onClose: () => vo
       weight_g,
       length_mm: l !== null ? Math.round(l * 10) : null,
       head_mm: h !== null ? Math.round(h * 10) : null,
+      deleted_at: null,
     })
     if (weight_g || l || h) {
-      await save('growth', { id: stableId(householdId, 'growth', 'birth'), measured_on: bornAt.slice(0, 10), weight_g, length_mm: l !== null ? Math.round(l * 10) : null, head_mm: h !== null ? Math.round(h * 10) : null })
+      await save('growth', { id: stableId(householdId, 'growth', 'birth'), deleted_at: null, measured_on: bornAt.slice(0, 10), weight_g, length_mm: l !== null ? Math.round(l * 10) : null, head_mm: h !== null ? Math.round(h * 10) : null })
     }
     await setSetting('labor_started', false)
     await setSetting('phase_manual', null)

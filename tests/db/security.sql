@@ -185,6 +185,18 @@ reset role;
 set role anon;
 select pg_temp.check((select (public.quick_log((select r->>'token' from r_tok), 'pipi')->>'ok')::boolean = false), 'jeton révoqué refusé');
 
+-- Suppression définitive (foyer de l'intrus)
+reset role;
+set role authenticated;
+select pg_temp.as_user('99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select public.delete_household('oui')->>'error') = 'confirmation', 'suppression : confirmation exigée');
+create temp table hid_x as select public.my_household_id() as id;
+select pg_temp.check((select (public.delete_household('SUPPRIMER')->>'ok')::boolean), 'suppression du foyer');
+reset role;
+select pg_temp.check((select count(*) = 0 from public.households where id = (select id from hid_x)), 'foyer supprimé');
+select pg_temp.check((select count(*) = 0 from public.members where household_id = (select id from hid_x)), 'membres supprimés en cascade');
+select pg_temp.check((select count(*) >= 1 from public.notes), 'les autres foyers sont intacts');
+
 -- anon n'a accès à rien
 reset role;
 set role anon;

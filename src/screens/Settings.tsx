@@ -171,6 +171,19 @@ export function Settings() {
         </Button>
       </Card>
 
+      <SectionTitle>Sauvegarde & données</SectionTitle>
+      <Link to="/sauvegarde" className="press block">
+        <Card className="flex items-center gap-3">
+          <span className="text-3xl" aria-hidden>
+            💾
+          </span>
+          <span className="flex-1">
+            <span className="block font-bold">Exporter, livre PDF, supprimer</span>
+            <span className="block text-sm text-ink-soft">ZIP des données et des photos, livre de naissance, effacement</span>
+          </span>
+        </Card>
+      </Link>
+
       <SectionTitle>{t.about}</SectionTitle>
       <Card className="flex flex-col gap-2 text-sm text-ink-soft">
         <p>{t.privacy}</p>

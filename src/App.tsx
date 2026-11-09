@@ -17,6 +17,8 @@ import { Names } from '@/screens/Names'
 import { Health } from '@/screens/Health'
 import { DayJ } from '@/screens/DayJ'
 import { Memories } from '@/screens/Memories'
+import { Backup } from '@/screens/Backup'
+import { Book } from '@/screens/Book'
 import { ListDetail } from '@/screens/ListDetail'
 
 export function App() {
@@ -58,6 +60,8 @@ function Shell() {
           <Route path="/sante" element={<Health />} />
           <Route path="/souvenirs" element={<Memories />} />
           <Route path="/reglages" element={<Settings />} />
+          <Route path="/sauvegarde" element={<Backup />} />
+          <Route path="/livre" element={<Book />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
