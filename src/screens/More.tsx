@@ -6,7 +6,7 @@ const items: Array<{ to: string; label: string; icon: ReactNode; color: string; 
   { to: '/prenoms', label: 'Prénoms', icon: <Heart />, color: 'bg-rose' },
   { to: '/jour-j', label: 'Jour J', icon: <Rocket />, color: 'bg-apricot' },
   { to: '/sante', label: 'Carnet de santé', icon: <Stethoscope />, color: 'bg-sage' },
-  { to: '/souvenirs', label: 'Souvenirs', icon: <Camera />, color: 'bg-plum', soon: 'Phase 3' },
+  { to: '/souvenirs', label: 'Souvenirs', icon: <Camera />, color: 'bg-plum' },
   { to: '/reglages', label: 'Réglages', icon: <Settings />, color: 'bg-surface-2' },
 ]
 

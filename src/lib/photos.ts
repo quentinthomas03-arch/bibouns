@@ -57,3 +57,11 @@ export async function photoUrl(path: string): Promise<string | null> {
 export async function deletePhoto(path: string) {
   await supabase?.storage.from(BUCKET).remove([path])
 }
+
+/** Télécharge une photo privée (pour la partager / l'enregistrer dans Photos). */
+export async function downloadPhoto(path: string): Promise<Blob> {
+  if (!supabase) throw new Error('Indisponible en mode démo')
+  const { data, error } = await supabase.storage.from(BUCKET).download(path)
+  if (error || !data) throw new Error('Photo indisponible (réseau ?)')
+  return data
+}

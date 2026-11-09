@@ -5,7 +5,6 @@ import { useTheme } from '@/app/theme'
 import { TabBar } from '@/components/TabBar'
 import { QuickSheet } from '@/components/QuickSheet'
 import { Biboun } from '@/components/Biboun'
-import { Soon } from '@/components/Soon'
 import { Onboarding } from '@/screens/Onboarding'
 import { InstallGate, isIos, isStandalone } from '@/screens/InstallGate'
 import { ConfigMissing } from '@/screens/ConfigMissing'
@@ -17,6 +16,7 @@ import { Track } from '@/screens/Track'
 import { Names } from '@/screens/Names'
 import { Health } from '@/screens/Health'
 import { DayJ } from '@/screens/DayJ'
+import { Memories } from '@/screens/Memories'
 import { ListDetail } from '@/screens/ListDetail'
 
 export function App() {
@@ -56,7 +56,7 @@ function Shell() {
           <Route path="/prenoms" element={<Names />} />
           <Route path="/jour-j" element={<DayJ />} />
           <Route path="/sante" element={<Health />} />
-          <Route path="/souvenirs" element={<Soon title="Souvenirs" phase="Phase 3" />} />
+          <Route path="/souvenirs" element={<Memories />} />
           <Route path="/reglages" element={<Settings />} />
           <Route path="*" element={<Home />} />
         </Routes>
