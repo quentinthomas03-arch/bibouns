@@ -21,7 +21,7 @@ export interface Ctx {
 }
 
 /** Crée ou remplace une ligne (complète les colonnes techniques). */
-export async function saveRow<T extends Record<string, unknown>>(ctx: Ctx, table: TableName, fields: T & { id?: string }) {
+export async function saveRow<T extends object>(ctx: Ctx, table: TableName, fields: T & { id?: string }) {
   const id = fields.id ?? newId()
   const existing = (await ctx.db.rows(table).get(id)) as BaseRow | undefined
   const row: BaseRow = {
@@ -41,7 +41,7 @@ export async function saveRow<T extends Record<string, unknown>>(ctx: Ctx, table
 /** Hook : accès aux opérations d'écriture du foyer courant. */
 export function useStore() {
   const ctx = useSession().ctx!
-  const save = useCallback(<T extends Record<string, unknown>>(table: TableName, fields: T & { id?: string }) => saveRow(ctx, table, fields), [ctx])
+  const save = useCallback(<T extends object>(table: TableName, fields: T & { id?: string }) => saveRow(ctx, table, fields), [ctx])
   const patch = useCallback((table: TableName, id: string, p: Record<string, unknown>) => ctx.engine.patch(table, id, p), [ctx])
   const remove = useCallback((table: TableName, id: string) => ctx.engine.patch(table, id, { deleted_at: nowIso() }), [ctx])
   const setSetting = useCallback(

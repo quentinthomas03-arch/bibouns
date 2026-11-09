@@ -16,7 +16,7 @@ export function WeekCard({ p }: { p: PregnancyProgress }) {
           {info.emoji}
         </span>
         <div className="flex-1">
-          <p className="text-sm font-bold text-ink-soft">Cette semaine, Biboun a la taille d’…</p>
+          <p className="text-sm font-bold text-ink-soft">Cette semaine, Biboun est grand comme…</p>
           <p className="font-display text-2xl font-semibold leading-tight">{info.fruit}</p>
           <p className="text-sm text-ink-soft font-semibold">
             {formatLength(info.cm)} · {formatWeight(info.g)}

@@ -12,6 +12,8 @@ import { ConfigMissing } from '@/screens/ConfigMissing'
 import { Home } from '@/screens/Home'
 import { Settings } from '@/screens/Settings'
 import { More } from '@/screens/More'
+import { Lists } from '@/screens/Lists'
+import { ListDetail } from '@/screens/ListDetail'
 
 export function App() {
   useTheme() // applique le thème choisi sur ce téléphone
@@ -44,7 +46,8 @@ function Shell() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/suivi" element={<Soon title="Suivi" phase="Phase 1 · grossesse — Phase 2 · bébé" />} />
-          <Route path="/listes" element={<Soon title="Listes" phase="Phase 1" />} />
+          <Route path="/listes" element={<Lists />} />
+          <Route path="/listes/:id" element={<ListDetail />} />
           <Route path="/plus" element={<More />} />
           <Route path="/prenoms" element={<Soon title="Prénoms" phase="Phase 1" />} />
           <Route path="/jour-j" element={<Soon title="Jour J" phase="Phase 3" />} />
