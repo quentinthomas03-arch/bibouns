@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Sheet } from './ui/Sheet'
 import { Button } from './ui/Button'
 import { Field } from './ui/Field'
@@ -23,6 +24,10 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const toast = useToast()
   const [text, setText] = useState('')
   const [sub, setSub] = useState<Open>(null)
+  const navigate = useNavigate()
+  const contractions = useRows<BaseRow & { started_at: string; ended_at?: string | null }>('contractions') ?? []
+  const runningContraction = contractions.find((c) => !c.ended_at)
+  const { patch } = useStore()
 
   const go = (s: Open) => {
     onClose()
@@ -31,7 +36,21 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
 
   const actions: { label: string; emoji: string; onClick?: () => void }[] =
     phase === 'dday'
-        ? [{ label: 'Contraction', emoji: '⏱️' }, { label: 'Contacts', emoji: '📞' }, { label: 'Valise', emoji: '🧳' }]
+        ? [
+            {
+              label: runningContraction ? 'Fin de contraction' : 'Début de contraction',
+              emoji: runningContraction ? '⏹️' : '⏱️',
+              onClick: () => {
+                void (runningContraction
+                  ? patch('contractions', runningContraction.id, { ended_at: new Date().toISOString() })
+                  : save('contractions', { started_at: new Date().toISOString(), ended_at: null }))
+                onClose()
+              },
+            },
+            { label: 'Appeler', emoji: '📞', onClick: () => { onClose(); navigate('/jour-j') } },
+            { label: 'Valises', emoji: '🧳', onClick: () => { onClose(); navigate('/listes') } },
+            { label: 'Bébé est né !', emoji: '👶', onClick: () => { onClose(); navigate('/jour-j') } },
+          ]
         : [
             { label: 'Rendez-vous', emoji: '📅', onClick: () => go('rdv') },
             { label: 'Journal', emoji: '📝', onClick: () => go('journal') },

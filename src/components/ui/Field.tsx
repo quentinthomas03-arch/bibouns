@@ -1,7 +1,7 @@
 import { useId, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 
 const base =
-  'w-full min-h-13 rounded-2xl bg-surface-2 text-ink placeholder:text-ink-soft/70 px-4 py-3 border-2 border-transparent focus:border-primary focus:outline-none'
+  'w-full min-w-0 min-h-13 rounded-2xl bg-surface-2 text-ink placeholder:text-ink-soft/70 px-4 py-3 border-2 border-transparent focus:border-primary focus:outline-none'
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
@@ -12,7 +12,7 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Field({ label, hint, className = '', ...rest }: FieldProps) {
   const id = useId()
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className}`}>
       <label htmlFor={id} className="block font-bold mb-1.5 px-1">
         {label}
       </label>

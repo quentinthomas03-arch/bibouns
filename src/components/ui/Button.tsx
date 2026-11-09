@@ -25,9 +25,10 @@ const sizes: Record<Size, string> = {
 }
 
 /** Bouton principal : grandes zones tactiles (44 px minimum), retour visuel à l'appui. */
-export function Button({ variant = 'primary', size = 'lg', block, loading, icon, className = '', children, disabled, ...rest }: Props) {
+export function Button({ variant = 'primary', size = 'lg', block, loading, icon, className = '', children, disabled, type = 'button', ...rest }: Props) {
   return (
     <button
+      type={type}
       {...rest}
       disabled={disabled || loading}
       aria-busy={loading || undefined}

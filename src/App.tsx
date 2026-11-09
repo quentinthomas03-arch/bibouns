@@ -16,6 +16,7 @@ import { Lists } from '@/screens/Lists'
 import { Track } from '@/screens/Track'
 import { Names } from '@/screens/Names'
 import { Health } from '@/screens/Health'
+import { DayJ } from '@/screens/DayJ'
 import { ListDetail } from '@/screens/ListDetail'
 
 export function App() {
@@ -53,7 +54,7 @@ function Shell() {
           <Route path="/listes/:id" element={<ListDetail />} />
           <Route path="/plus" element={<More />} />
           <Route path="/prenoms" element={<Names />} />
-          <Route path="/jour-j" element={<Soon title="Jour J" phase="Phase 3" />} />
+          <Route path="/jour-j" element={<DayJ />} />
           <Route path="/sante" element={<Health />} />
           <Route path="/souvenirs" element={<Soon title="Souvenirs" phase="Phase 3" />} />
           <Route path="/reglages" element={<Settings />} />

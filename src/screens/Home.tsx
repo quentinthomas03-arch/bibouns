@@ -14,6 +14,7 @@ import type { Phase } from '@/lib/phase'
 import { WeekCard } from '@/components/home/WeekCard'
 import { NextMilestones } from '@/components/home/NextMilestones'
 import { BabySummary } from '@/components/baby/BabySummary'
+import { ContractionTimer } from '@/screens/DayJ'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
 
 function greeting(name: string) {
@@ -46,12 +47,21 @@ export function Home() {
 
       {phase === 'before' && <Countdown dueDate={dueDate} />}
       {phase === 'before' && dueDate && <WeekCard p={pregnancyProgress(dueDate)} />}
+      {phase === 'before' && dueDate && pregnancyProgress(dueDate).weeks >= 34 && (
+        <Link to="/jour-j" className="press mt-4 flex items-center gap-3 rounded-3xl bg-apricot/60 p-4 shadow-soft">
+          <span className="text-3xl" aria-hidden>
+            🧳
+          </span>
+          <span className="flex-1 font-bold">Prépare le mode Jour J : maternité, contacts, documents</span>
+        </Link>
+      )}
       {phase === 'dday' && (
-        <Card className="mt-4 text-center bg-primary-soft">
-          <Biboun mood="wow" size={110} className="mx-auto animate-wiggle" />
-          <p className="font-display text-3xl font-semibold mt-2">{phases.dday.title}</p>
-          <p className="text-ink-soft mt-1">Le mode Jour J complet (contractions, valise, contacts) arrive en Phase 3.</p>
-        </Card>
+        <>
+          <ContractionTimer compact />
+          <Link to="/jour-j" className="press mt-3 block rounded-3xl bg-primary text-primary-ink p-4 text-center font-bold text-lg shadow-soft">
+            🚀 Ouvrir le mode Jour J (appels, trajet, valise, naissance)
+          </Link>
+        </>
       )}
       {phase === 'after' && <BabySummary name={(baby?.first_name as string) || 'Biboun'} bornAt={(baby?.born_at as string) ?? null} />}
       {phase !== 'dday' && dueDate && <NextMilestones dueDate={dueDate} bornAt={(baby?.born_at as string) ?? null} />}
