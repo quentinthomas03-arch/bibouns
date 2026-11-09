@@ -6,6 +6,7 @@ import { usePhase } from '@/app/phase'
 import { useRows, useStore } from '@/sync/store'
 import { useToast } from './ui/Toast'
 import { AppointmentSheet, JournalSheet, MeasureSheet } from './pregnancy/Sheets'
+import { QuickBaby } from './baby/QuickBaby'
 import { between, type ChecklistRow, type ItemRow } from '@/lib/checklists'
 import type { BaseRow } from '@/sync/tables'
 import { notes, quickActions } from '@/content/fr'
@@ -29,9 +30,7 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
   }
 
   const actions: { label: string; emoji: string; onClick?: () => void }[] =
-    phase === 'after'
-      ? [{ label: 'Repas', emoji: '🍼' }, { label: 'Couche', emoji: '💩' }, { label: 'Sommeil', emoji: '😴' }, { label: 'Vitamine', emoji: '💊' }]
-      : phase === 'dday'
+    phase === 'dday'
         ? [{ label: 'Contraction', emoji: '⏱️' }, { label: 'Contacts', emoji: '📞' }, { label: 'Valise', emoji: '🧳' }]
         : [
             { label: 'Rendez-vous', emoji: '📅', onClick: () => go('rdv') },
@@ -51,6 +50,9 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <>
       <Sheet open={open} onClose={onClose} title={quickActions.title}>
+        {phase === 'after' ? (
+          <QuickBaby onDone={onClose} />
+        ) : (
         <div className="grid grid-cols-2 gap-3">
           {actions.map((a) => (
             <button
@@ -67,6 +69,7 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
             </button>
           ))}
         </div>
+        )}
         <form
           className="mt-5 flex flex-col gap-2"
           onSubmit={(e) => {

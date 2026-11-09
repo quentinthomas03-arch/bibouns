@@ -15,6 +15,7 @@ import { useTheme, type ThemePref } from '@/app/theme'
 import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
 import { supabase } from '@/lib/supabase'
+import { BabySettings } from '@/components/settings/BabySettings'
 import { avatars, memberColors, onboarding as to, settings as t, sync as tsync } from '@/content/fr'
 
 export function Settings() {
@@ -115,6 +116,8 @@ export function Settings() {
       <Card>
         <Field label={to.dueDate} type="date" value={due} onChange={(e) => setDue(e.target.value)} onBlur={() => due && due !== dueDate && setSetting('due_date', due).then(() => toast(t.saved))} hint={to.dueDateHint} />
       </Card>
+
+      <BabySettings />
 
       <SectionTitle>{t.appearance}</SectionTitle>
       <Segmented<ThemePref>

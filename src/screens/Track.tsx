@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Biboun } from '@/components/Biboun'
-import { Soon } from '@/components/Soon'
+import { BabyTrack } from './BabyTrack'
 import { LineChart } from '@/components/charts/LineChart'
 import { AppointmentSheet, JournalSheet, MeasureSheet, type Appointment, type JournalEntry, type Measurement } from '@/components/pregnancy/Sheets'
 import { usePhase } from '@/app/phase'
@@ -28,7 +28,7 @@ export function Track() {
   const { phase } = usePhase()
   const [params, setParams] = useSearchParams()
   const tab = (params.get('tab') as Tab) || 'rdv'
-  if (phase === 'after') return <Soon title="Suivi de bébé" phase="Phase 2" />
+  if (phase === 'after') return <BabyTrack />
 
   return (
     <div className="px-4 pt-safe pb-tabbar max-w-lg mx-auto">

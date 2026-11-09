@@ -9,10 +9,11 @@ import { useMembers } from '@/app/members'
 import { usePhase } from '@/app/phase'
 import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
-import { babyAge, formatBabyAge, formatSA, pregnancyProgress } from '@/lib/pregnancy'
+import { formatSA, pregnancyProgress } from '@/lib/pregnancy'
 import type { Phase } from '@/lib/phase'
 import { WeekCard } from '@/components/home/WeekCard'
 import { NextMilestones } from '@/components/home/NextMilestones'
+import { BabySummary } from '@/components/baby/BabySummary'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
 
 function greeting(name: string) {
@@ -45,7 +46,6 @@ export function Home() {
 
       {phase === 'before' && <Countdown dueDate={dueDate} />}
       {phase === 'before' && dueDate && <WeekCard p={pregnancyProgress(dueDate)} />}
-      {phase !== 'dday' && dueDate && <NextMilestones dueDate={dueDate} bornAt={(baby?.born_at as string) ?? null} />}
       {phase === 'dday' && (
         <Card className="mt-4 text-center bg-primary-soft">
           <Biboun mood="wow" size={110} className="mx-auto animate-wiggle" />
@@ -53,13 +53,8 @@ export function Home() {
           <p className="text-ink-soft mt-1">Le mode Jour J complet (contractions, valise, contacts) arrive en Phase 3.</p>
         </Card>
       )}
-      {phase === 'after' && (
-        <Card className="mt-4 text-center">
-          <Biboun mood="love" size={110} className="mx-auto" />
-          <p className="font-display text-3xl font-semibold mt-2">{(baby?.first_name as string) || 'Biboun'}</p>
-          <p className="text-ink-soft mt-1">{baby?.born_at ? formatBabyAge(babyAge(new Date(baby.born_at as string))) : 'Le suivi bébé arrive en Phase 2.'}</p>
-        </Card>
-      )}
+      {phase === 'after' && <BabySummary name={(baby?.first_name as string) || 'Biboun'} bornAt={(baby?.born_at as string) ?? null} />}
+      {phase !== 'dday' && dueDate && <NextMilestones dueDate={dueDate} bornAt={(baby?.born_at as string) ?? null} />}
 
       {!partner && <InviteCard />}
       <LoveNotes />
