@@ -117,6 +117,22 @@ Une PWA ne peut pas créer de widget iOS. La meilleure alternative est l'app **R
 
 Côté sécurité : le jeton (24 caractères aléatoires) n'est stocké que haché. Il ne permet **que d'ajouter** une saisie bébé, pas de lire vos données, et il est limité à 30 saisies par tranche de 10 minutes. On le désactive en un tap.
 
+## 3 ter. Notifications
+
+Sur chaque iPhone : ouvre l'appli **installée** → *Réglages* → **Notifications** → **Activer**, accepte, puis touche **Tester**. Il faut iOS 16.4 ou plus récent.
+
+| Rappel | Quand |
+|---|---|
+| 📅 Rendez-vous | selon le rappel choisi sur le RDV (la veille, 2 h avant…) |
+| 💉 Vaccins | 7 jours avant et le jour conseillé, à 9 h |
+| ⏰ Échéances des listes | 3 jours avant et le jour J, à 9 h (au responsable, sinon aux deux) |
+| 👉 Tâche attribuée | dès que ton binôme t'attribue un élément |
+| 💌 Mots doux | à chaque mot doux de ton binôme |
+
+Chaque catégorie se coupe séparément, par personne.
+
+**Comment ça marche** : une fonction Supabase (`supabase/functions/push`) est appelée toutes les 5 minutes par une tâche planifiée de la base (`pg_cron`). Elle calcule les rappels (`_shared/reminders.ts`, testé) puis envoie des messages **chiffrés de bout en bout** (Web Push, RFC 8291 et 8292). Le chiffrement est fait sans bibliothèque externe, et nos tests le valident avec l'implémentation de référence. Apple et Google ne voient que des données chiffrées. Les clés VAPID sont créées automatiquement au premier déploiement et restent dans la base, inaccessibles à l'appli. Un journal empêche tout envoi en double.
+
 ## 4. Sauvegarder et exporter
 
 - **Export complet** (Phase 4) : un fichier ZIP avec toutes les données (JSON + tableaux CSV lisibles dans Excel/Numbers) et toutes les photos en JPG rangées par mois, prêtes pour un livre photo. Plus un PDF « livre de naissance » mois par mois.
@@ -208,5 +224,5 @@ Pour brancher une vraie base en local, crée un fichier `.env.local` contenant `
 - [x] **Phase 0** : base de données + RLS, foyer par code, synchro hors ligne + temps réel, PWA, design system, déploiement
 - [x] **Phase 1** : accueil enrichi (fruit de la semaine), checklists, prénoms en swipe, suivi de grossesse
 - [x] **Phase 2** : suivi bébé en 2 taps, carnet de santé (courbes OMS, vaccins), « qui fait quoi », raccourcis iPhone
-- [ ] **Phase 3** : souvenirs et photos, notifications push, mode Jour J complet
+- [x] **Phase 3** : souvenirs et photos, notifications push, mode Jour J complet
 - [ ] **Phase 4** : export ZIP/PDF, suppression des données, finitions

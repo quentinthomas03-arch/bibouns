@@ -15,6 +15,7 @@ import { WeekCard } from '@/components/home/WeekCard'
 import { NextMilestones } from '@/components/home/NextMilestones'
 import { BabySummary } from '@/components/baby/BabySummary'
 import { ContractionTimer } from '@/screens/DayJ'
+import { notifyPartner } from '@/lib/push'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
 
 function greeting(name: string) {
@@ -175,7 +176,7 @@ interface Note extends BaseRow {
 export function LoveNotes() {
   const all = useRows<Note>('notes')
   const { byId } = useMembers()
-  const { save } = useStore()
+  const { save, ...ctx } = useStore()
   const [text, setText] = useState('')
   const list = useMemo(() => [...(all ?? [])].sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? '')).slice(0, 6), [all])
 
@@ -183,7 +184,9 @@ export function LoveNotes() {
     e?.preventDefault()
     if (!body.trim()) return
     setText('')
-    await save('notes', { body: body.trim() })
+    const row = await save('notes', { body: body.trim() })
+    // laisse le temps à la note d'arriver sur le serveur avant de prévenir
+    void ctx.engine.flush().then(() => notifyPartner('note', row.id))
   }
 
   return (

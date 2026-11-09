@@ -17,6 +17,7 @@ import type { BaseRow } from '@/sync/tables'
 import { supabase } from '@/lib/supabase'
 import { BabySettings } from '@/components/settings/BabySettings'
 import { ShortcutSettings } from '@/components/settings/ShortcutSettings'
+import { NotificationSettings } from '@/components/settings/NotificationSettings'
 import { avatars, memberColors, onboarding as to, settings as t, sync as tsync } from '@/content/fr'
 
 export function Settings() {
@@ -118,6 +119,7 @@ export function Settings() {
         <Field label={to.dueDate} type="date" value={due} onChange={(e) => setDue(e.target.value)} onBlur={() => due && due !== dueDate && setSetting('due_date', due).then(() => toast(t.saved))} hint={to.dueDateHint} />
       </Card>
 
+      <NotificationSettings />
       <BabySettings />
       <ShortcutSettings />
 

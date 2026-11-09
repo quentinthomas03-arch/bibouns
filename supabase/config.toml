@@ -1,2 +1,7 @@
 # Configuration minimale pour la CLI Supabase (utilisée par GitHub Actions).
 project_id = "bibouns"
+
+# Fonction de notifications : authentification gérée dans le code
+# (secret du cron, ou session de l'utilisateur), pas par la passerelle.
+[functions.push]
+verify_jwt = false

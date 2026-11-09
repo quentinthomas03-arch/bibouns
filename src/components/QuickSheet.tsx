@@ -11,6 +11,7 @@ import { QuickBaby } from './baby/QuickBaby'
 import { between, type ChecklistRow, type ItemRow } from '@/lib/checklists'
 import type { BaseRow } from '@/sync/tables'
 import { notes, quickActions } from '@/content/fr'
+import { notifyPartner } from '@/lib/push'
 
 type Open = null | 'rdv' | 'journal' | 'measure' | 'task'
 
@@ -20,7 +21,7 @@ type Open = null | 'rdv' | 'journal' | 'measure' | 'task'
  */
 export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { phase } = usePhase()
-  const { save } = useStore()
+  const { save, engine } = useStore()
   const toast = useToast()
   const [text, setText] = useState('')
   const [sub, setSub] = useState<Open>(null)
@@ -60,7 +61,8 @@ export function QuickSheet({ open, onClose }: { open: boolean; onClose: () => vo
 
   async function sendNote(body: string) {
     if (!body.trim()) return
-    await save('notes', { body: body.trim() })
+    const row = await save('notes', { body: body.trim() })
+    void engine.flush().then(() => notifyPartner('note', row.id))
     setText('')
     toast('Envoyé 💌')
     onClose()

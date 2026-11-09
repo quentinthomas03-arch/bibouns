@@ -13,6 +13,7 @@ import { useMembers } from '@/app/members'
 import { useRows, useStore, nowIso } from '@/sync/store'
 import { between, euros, listStats, type ChecklistRow, type ItemRow } from '@/lib/checklists'
 import type { BaseRow } from '@/sync/tables'
+import { notifyPartner } from '@/lib/push'
 
 type List = BaseRow & ChecklistRow
 type Item = BaseRow & ItemRow
@@ -188,7 +189,7 @@ export function ListDetail() {
 
 /** Édition d'un élément : libellé, responsable, échéance, budget, note. */
 function ItemSheet({ item, onClose, onDelete }: { item: Item | null; onClose: () => void; onDelete: (i: Item) => void }) {
-  const { patch } = useStore()
+  const { patch, engine, memberId } = useStore()
   const [draft, setDraft] = useState<Partial<Item> & { budgetText?: string }>({})
   const [lastId, setLastId] = useState<string | null>(null)
   if (item && item.id !== lastId) {
@@ -206,6 +207,8 @@ function ItemSheet({ item, onClose, onDelete }: { item: Item | null; onClose: ()
       note: draft.note || null,
       budget_cents: parseBudget(draft.budgetText),
     })
+    // nouvelle attribution au binôme : on le prévient
+    if (draft.assignee && draft.assignee !== item!.assignee && draft.assignee !== memberId) void engine.flush().then(() => notifyPartner('assigned', item!.id))
     onClose()
   }
 

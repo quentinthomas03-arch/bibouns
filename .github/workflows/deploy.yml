@@ -80,6 +80,19 @@ jobs:
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF"
           supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --yes
+      - name: Fonction des notifications (push)
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          supabase functions deploy push --use-api --no-verify-jwt
+          # Crée les clés VAPID si besoin (idempotent) et enregistre l'URL pour le cron
+          for i in 1 2 3 4 5; do
+            if curl -fsS -X POST "https://$SUPABASE_PROJECT_REF.supabase.co/functions/v1/push" \
+                 -H "Content-Type: application/json" -d '{"action":"init"}' > /dev/null; then
+              echo "Notifications prêtes"; exit 0
+            fi
+            sleep $((i * 5))
+          done
+          echo "::warning::La fonction push ne répond pas encore ; elle sera initialisée au prochain déploiement."
       - name: Réglages d'authentification (connexion anonyme)
         if: steps.check.outputs.ok == 'true'
         run: |

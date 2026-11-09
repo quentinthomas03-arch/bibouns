@@ -138,6 +138,28 @@ select pg_temp.check((select first_name = 'Quentin' from public.members where us
 select pg_temp.as_user('11111111-1111-1111-1111-111111111111');
 select pg_temp.check((select count(*) = 0 from public.notes), 'ancien téléphone déconnecté du foyer');
 
+-- Notifications : abonnements privés, configuration illisible
+select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
+insert into public.push_subscriptions (household_id, member_id, endpoint, p256dh, auth)
+  values (public.my_household_id(), public.my_member_id(), 'https://push.example/aude', 'k', 'a');
+select pg_temp.check((select count(*) = 1 from public.push_subscriptions), 'Aude voit son abonnement');
+select pg_temp.as_user('44444444-4444-4444-4444-444444444444');
+select pg_temp.check((select count(*) = 0 from public.push_subscriptions), 'Quentin ne voit pas l''abonnement d''Aude');
+do $$ begin
+  insert into public.push_subscriptions (household_id, member_id, endpoint, p256dh, auth)
+    values (public.my_household_id(), (select id from public.members where first_name = 'Aude'), 'https://push.example/x', 'k', 'a');
+  raise exception 'ÉCHEC : abonnement au nom de l''autre';
+exception when others then
+  if sqlerrm like 'ÉCHEC%' then raise; end if;
+  raise notice 'ok - impossible d''abonner l''autre';
+end $$;
+do $$ begin
+  perform cron_secret from public.push_config;
+  raise exception 'ÉCHEC : config lisible';
+exception when insufficient_privilege then raise notice 'ok - clés et secret du cron illisibles';
+end $$;
+select pg_temp.check((select public.push_public_key() is null), 'clé publique VAPID accessible (vide avant init)');
+
 -- Raccourcis iPhone : jeton personnel
 select pg_temp.as_user('22222222-2222-2222-2222-222222222222');
 create temp table r_tok as select public.create_shortcut_token() as r;
