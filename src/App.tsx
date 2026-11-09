@@ -1,0 +1,61 @@
+import { useState } from 'react'
+import { HashRouter, Route, Routes } from 'react-router-dom'
+import { useSession } from '@/app/session'
+import { useTheme } from '@/app/theme'
+import { TabBar } from '@/components/TabBar'
+import { QuickSheet } from '@/components/QuickSheet'
+import { Biboun } from '@/components/Biboun'
+import { Soon } from '@/components/Soon'
+import { Onboarding } from '@/screens/Onboarding'
+import { InstallGate, isIos, isStandalone } from '@/screens/InstallGate'
+import { ConfigMissing } from '@/screens/ConfigMissing'
+import { Home } from '@/screens/Home'
+import { Settings } from '@/screens/Settings'
+import { More } from '@/screens/More'
+
+export function App() {
+  useTheme() // applique le thème choisi sur ce téléphone
+  const { status } = useSession()
+  const [skipInstall, setSkipInstall] = useState(false)
+
+  if (status === 'unconfigured') return <ConfigMissing />
+  if (status === 'loading')
+    return (
+      <div className="min-h-dvh grid place-items-center" aria-busy="true">
+        <Biboun size={110} className="animate-float" title="Chargement" />
+      </div>
+    )
+  if (status === 'onboarding') {
+    if (isIos() && !isStandalone() && !skipInstall) return <InstallGate onContinue={() => setSkipInstall(true)} />
+    return <Onboarding />
+  }
+  return (
+    <HashRouter>
+      <Shell />
+    </HashRouter>
+  )
+}
+
+function Shell() {
+  const [quick, setQuick] = useState(false)
+  return (
+    <>
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/suivi" element={<Soon title="Suivi" phase="Phase 1 · grossesse — Phase 2 · bébé" />} />
+          <Route path="/listes" element={<Soon title="Listes" phase="Phase 1" />} />
+          <Route path="/plus" element={<More />} />
+          <Route path="/prenoms" element={<Soon title="Prénoms" phase="Phase 1" />} />
+          <Route path="/jour-j" element={<Soon title="Jour J" phase="Phase 3" />} />
+          <Route path="/sante" element={<Soon title="Carnet de santé" phase="Phase 2" />} />
+          <Route path="/souvenirs" element={<Soon title="Souvenirs" phase="Phase 3" />} />
+          <Route path="/reglages" element={<Settings />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </main>
+      <TabBar onQuick={() => setQuick(true)} />
+      <QuickSheet open={quick} onClose={() => setQuick(false)} />
+    </>
+  )
+}

@@ -9,8 +9,11 @@ import { fileURLToPath } from 'node:url'
 // BASE_PATH peut être surchargé (ex. "/" pour un domaine perso).
 const base = process.env.BASE_PATH ?? '/bibouns/'
 
+const version = `${process.env.npm_package_version ?? '0.0.0'}-${(process.env.GITHUB_SHA ?? 'local').slice(0, 7)}`
+
 export default defineConfig({
   base,
+  define: { __APP_VERSION__: JSON.stringify(version) },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     react(),
@@ -21,7 +24,11 @@ export default defineConfig({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: false,
-      injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'] },
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
+        // Polices : on ne pré-charge que l'alphabet latin (les autres restent dispo à la demande)
+        globIgnores: ['**/*{cyrillic,vietnamese,greek,hebrew}*'],
+      },
       manifest: {
         name: "Biboun's",
         short_name: "Biboun's",

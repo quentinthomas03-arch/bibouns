@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Biboun's</title>
+    <meta name="description" content="Notre appli de futurs parents : grossesse, Jour J et bébé, à deux." />
+    <meta name="theme-color" content="#FFF6EF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1C1513" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Biboun's" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      // Applique le thème avant l'affichage (évite un flash blanc la nuit)
+      (function () {
+        try {
+          var pref = localStorage.getItem('bibouns.theme') || 'auto'
+          var dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

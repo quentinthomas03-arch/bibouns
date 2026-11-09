@@ -1,0 +1,119 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/fredoka';
+@import '@fontsource-variable/nunito';
+
+/* ==========================================================================
+   Design system Biboun's — terracotta, rose poudré, abricot, ambiance automne.
+   Toutes les couleurs passent par des variables : le mode sombre "veilleuse"
+   ne fait que changer leurs valeurs. Contrastes vérifiés (WCAG AA).
+   ========================================================================== */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #fff6ef;          /* crème pêche */
+  --surface: #fffdfb;     /* cartes */
+  --surface-2: #fbe6da;   /* zones teintées */
+  --line: #f0d5c6;
+  --ink: #3a2621;         /* texte principal (13:1) */
+  --ink-soft: #7a5348;    /* texte secondaire (6:1) */
+  --primary: #b04e2c;     /* terracotta */
+  --primary-ink: #ffffff;
+  --primary-soft: #f8d6c6;
+  --rose: #f4c3ba;        /* rose poudré */
+  --apricot: #f7b98a;     /* abricot */
+  --mustard: #e3ad4f;     /* moutarde dorée */
+  --sage: #9db594;        /* vert sauge */
+  --plum: #c98aa0;        /* vieux rose */
+  --danger: #a8323c;
+  --shadow: 0 6px 20px -8px rgb(122 60 40 / 0.25);
+  color-scheme: light;
+}
+
+/* Mode "veilleuse" : brun très sombre, texte crème doux, jamais de blanc pur */
+.dark {
+  --bg: #1c1513;
+  --surface: #2a1f1b;
+  --surface-2: #35271f;
+  --line: #44322a;
+  --ink: #f2e2d8;
+  --ink-soft: #bfa497;
+  --primary: #e58f6f;
+  --primary-ink: #1c1513;
+  --primary-soft: #4a2e24;
+  --rose: #6b4440;
+  --apricot: #6e4a32;
+  --mustard: #a57d36;
+  --sage: #55684f;
+  --plum: #6a4553;
+  --danger: #e57b84;
+  --shadow: 0 6px 20px -10px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
+  --color-rose: var(--rose);
+  --color-apricot: var(--apricot);
+  --color-mustard: var(--mustard);
+  --color-sage: var(--sage);
+  --color-plum: var(--plum);
+  --color-danger: var(--danger);
+  --font-display: 'Fredoka Variable', ui-rounded, system-ui, sans-serif;
+  --font-sans: 'Nunito Variable', ui-rounded, system-ui, -apple-system, sans-serif;
+  --shadow-soft: var(--shadow);
+  --radius-blob: 1.75rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    background: var(--bg);
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+    touch-action: manipulation; /* pas de zoom au double-tap */
+  }
+  /* iOS zoome sur les champs < 16px : on reste à 16px minimum */
+  input, select, textarea, button { font: inherit; font-size: max(1rem, 16px); }
+  h1, h2, h3 { @apply font-display; }
+  :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 12px; }
+}
+
+@layer utilities {
+  .pt-safe { padding-top: max(env(safe-area-inset-top), 0.75rem); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pb-tabbar { padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+/* Micro-animations (désactivées si "réduire les animations" est activé) */
+@keyframes pop { 0% { transform: scale(.85); opacity: 0 } 60% { transform: scale(1.04) } 100% { transform: scale(1); opacity: 1 } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0) } 25% { transform: rotate(-6deg) } 75% { transform: rotate(6deg) } }
+@keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+@keyframes slide-up { from { transform: translateY(100%) } to { transform: translateY(0) } }
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1) } 96% { transform: scaleY(.1) } }
+.animate-pop { animation: pop .35s cubic-bezier(.2,.9,.3,1.3) both; }
+.animate-wiggle { animation: wiggle .5s ease-in-out; }
+.animate-float { animation: float 3.2s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up .28s cubic-bezier(.2,.9,.3,1) both; }
+.animate-fade-in { animation: fade-in .2s ease-out both; }
+.animate-blink { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
+.press { transition: transform .12s ease; }
+.press:active { transform: scale(.96); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

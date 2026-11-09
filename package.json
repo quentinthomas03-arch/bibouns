@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:db": "bash scripts/test-db.sh",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "dev:demo": "VITE_DEMO=1 vite --host"
   },
   "dependencies": {
     "@fontsource-variable/fredoka": "^5.3.0",
