@@ -11,6 +11,8 @@ import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
 import { babyAge, formatBabyAge, formatSA, pregnancyProgress } from '@/lib/pregnancy'
 import type { Phase } from '@/lib/phase'
+import { WeekCard } from '@/components/home/WeekCard'
+import { NextMilestones } from '@/components/home/NextMilestones'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
 
 function greeting(name: string) {
@@ -42,6 +44,8 @@ export function Home() {
       <PhaseSwitch phase={phase} manual={manual} onChange={(p) => void setSetting('phase_manual', p)} />
 
       {phase === 'before' && <Countdown dueDate={dueDate} />}
+      {phase === 'before' && dueDate && <WeekCard p={pregnancyProgress(dueDate)} />}
+      {phase !== 'dday' && dueDate && <NextMilestones dueDate={dueDate} bornAt={(baby?.born_at as string) ?? null} />}
       {phase === 'dday' && (
         <Card className="mt-4 text-center bg-primary-soft">
           <Biboun mood="wow" size={110} className="mx-auto animate-wiggle" />
