@@ -345,7 +345,7 @@ function MemorySheet({ initial, onClose }: { initial: Partial<Memory> | null; on
           )}
         </div>
         <p className="text-xs text-ink-soft -mt-2">
-          Jusqu’à {MEMORY_LIMITS.perMemory} photos, compressées sur le téléphone (~2000 px). Les originaux restent dans ta galerie.
+          Jusqu’à {MEMORY_LIMITS.perMemory} photos, compressées sur le téléphone (~2000 px). Sans réseau, elles partent automatiquement plus tard. Les originaux restent dans ta galerie.
         </p>
         <Field label="Titre" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Premier bain, balade au parc…" />
         <TextArea label="Ce qu’on veut se rappeler" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Ses mimiques, ce qu’on a ressenti…" />

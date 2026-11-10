@@ -15,6 +15,7 @@ import { useTextSize, useTheme, type TextSize, type ThemePref } from '@/app/them
 import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
 import { supabase } from '@/lib/supabase'
+import { photoQueue } from '@/lib/photos'
 import { BabySettings } from '@/components/settings/BabySettings'
 import { ShortcutSettings } from '@/components/settings/ShortcutSettings'
 import { NotificationSettings } from '@/components/settings/NotificationSettings'
@@ -35,6 +36,8 @@ export function Settings() {
   const households = useRows<BaseRow & { invite_code?: string | null; name: string }>('households') ?? []
   const household = households[0]
   const setAside = useLiveQuery(() => db.deadletter.count(), [db]) ?? 0
+  const [pendingPhotos, setPendingPhotos] = useState(0)
+  useEffect(() => photoQueue.onCount(setPendingPhotos), [])
 
   useEffect(() => setName(me?.first_name ?? ''), [me?.first_name])
   useEffect(() => setDue(dueDate ?? ''), [dueDate])
@@ -184,6 +187,7 @@ export function Settings() {
         {sync?.lastSyncAt && <p className="text-sm text-ink-soft">Dernière synchro : {new Date(sync.lastSyncAt).toLocaleString('fr-FR')}</p>}
         {sync?.lastError && sync.state !== 'idle' && <p className="text-sm text-danger break-words">{sync.lastError}</p>}
         {setAside > 0 && <p className="text-sm text-danger">{t.setAside(setAside)}</p>}
+        {pendingPhotos > 0 && <p className="text-sm">📤 {pendingPhotos} photo{pendingPhotos > 1 ? 's' : ''} en attente d’envoi (partiront au retour du réseau)</p>}
         <Button variant="soft" size="md" onClick={() => engine.syncNow().then(() => toast(t.saved))}>
           {t.syncNow}
         </Button>

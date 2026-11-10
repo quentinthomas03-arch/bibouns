@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { PhotoQueue, type UploadResult } from './photoQueue'
 
 export const BUCKET = 'household-files'
 /** Taille max d'une photo après compression (côté le plus long, en px). */
@@ -31,20 +32,44 @@ export async function compressImage(file: Blob, maxSide = MAX_SIDE, quality = JP
   return await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('compression impossible'))), 'image/jpeg', quality))
 }
 
-/** Envoie une photo dans le dossier du foyer. Nécessite le réseau. */
+/** Envoi réel vers le stockage privé (idempotent : un renvoi écrase la même photo). */
+async function sendToStorage(path: string, blob: Blob): Promise<UploadResult> {
+  if (!supabase || !navigator.onLine) return 'network'
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+  if (!error) return 'ok'
+  return /fetch|network|load failed|timeout/i.test(error.message) ? 'network' : 'error'
+}
+
+/** File d'envoi partagée par toute l'appli. */
+export const photoQueue = new PhotoQueue(sendToStorage)
+
+/** Relance l'envoi au retour du réseau, au retour dans l'appli et toutes les minutes. */
+export function startPhotoQueue() {
+  const kick = () => void photoQueue.flush()
+  window.addEventListener('online', kick)
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && kick())
+  setInterval(kick, 60_000)
+  kick()
+}
+
+/**
+ * Prépare une photo : compression, chemin définitif, rangement local, envoi
+ * en arrière-plan. Fonctionne sans réseau (la photo part plus tard).
+ */
 export async function uploadPhoto(householdId: string, folder: string, file: Blob): Promise<string> {
   if (!supabase) throw new Error('Stockage indisponible (mode démo)')
   const blob = await compressImage(file)
   const path = `${householdId}/${folder}/${crypto.randomUUID()}.jpg`
-  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: false })
-  if (error) throw new Error(/fetch|network|load failed/i.test(error.message) ? 'Pas de réseau : réessaie quand tu seras connecté.' : error.message)
+  await photoQueue.enqueue(path, blob)
   return path
 }
 
 const urlCache = new Map<string, { url: string; exp: number }>()
 
-/** Lien temporaire (1 h) pour afficher une photo privée. */
+/** Lien pour afficher une photo : copie locale si elle n'est pas encore envoyée, sinon lien signé (1 h). */
 export async function photoUrl(path: string): Promise<string | null> {
+  const local = await photoQueue.local(path)
+  if (local) return URL.createObjectURL(local)
   const hit = urlCache.get(path)
   if (hit && hit.exp > Date.now()) return hit.url
   if (!supabase) return null
@@ -55,11 +80,14 @@ export async function photoUrl(path: string): Promise<string | null> {
 }
 
 export async function deletePhoto(path: string) {
+  await photoQueue.forget(path)
   await supabase?.storage.from(BUCKET).remove([path])
 }
 
 /** Télécharge une photo privée (pour la partager / l'enregistrer dans Photos). */
 export async function downloadPhoto(path: string): Promise<Blob> {
+  const local = await photoQueue.local(path)
+  if (local) return local
   if (!supabase) throw new Error('Indisponible en mode démo')
   const { data, error } = await supabase.storage.from(BUCKET).download(path)
   if (error || !data) throw new Error('Photo indisponible (réseau ?)')
@@ -69,6 +97,7 @@ export async function downloadPhoto(path: string): Promise<Blob> {
 /** Supprime tous les fichiers du foyer (avant la suppression définitive). */
 export async function deleteAllFiles(householdId: string, onProgress?: (n: number) => void): Promise<number> {
   if (!supabase) return 0
+  await photoQueue.clear()
   let removed = 0
   for (const folder of ['memories', 'documents']) {
     for (;;) {

@@ -5,9 +5,13 @@ import { SessionProvider } from '@/app/session'
 import { ToastProvider } from '@/components/ui/Toast'
 import { App } from './App'
 import './index.css'
+import { startPhotoQueue } from '@/lib/photos'
 
 // Service worker : hors ligne + mises à jour automatiques
 registerSW({ immediate: true })
+
+// Photos en attente d'envoi : relancées automatiquement
+startPhotoQueue()
 
 // Demande au navigateur de ne pas effacer nos données locales
 void navigator.storage?.persist?.()
