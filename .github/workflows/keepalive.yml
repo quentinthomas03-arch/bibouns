@@ -1,7 +1,8 @@
 # =============================================================================
 # Garde-fous de long terme
 #  1. Ping quotidien de Supabase (l'offre gratuite met en pause un projet
-#     inactif 7 jours). Une vraie requête API = activité. Échoue (croix rouge
+#     inactif 7 jours). Une vraie requête API qui passe par la base = activité.
+#     Échoue (croix rouge
 #     + e-mail de GitHub) si le projet est en pause : à relancer sur supabase.com.
 #  2. Petit commit mensuel : GitHub désactive les tâches planifiées d'un dépôt
 #     public sans activité pendant 60 jours. Ce commit garde le dépôt "actif".
@@ -34,8 +35,11 @@ jobs:
           [ -z "$SUPABASE_PROJECT_REF" ] && { echo "Pas encore configuré"; exit 0; }
           KEY=$(curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
             "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/api-keys" | jq -r '[.[] | select(.name=="anon")][0].api_key')
-          curl -fsS "https://$SUPABASE_PROJECT_REF.supabase.co/rest/v1/households?select=id&limit=1" \
-            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" && echo " ✓ éveillé"
+          # Fonction publique en lecture seule (faux lien de liste) : passe par la base
+          # sans exposer aucune donnée ; la table households est interdite aux anonymes (401).
+          curl -fsS -X POST "https://$SUPABASE_PROJECT_REF.supabase.co/rest/v1/rpc/public_wishlist" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+            -d '{"p_token":"ping-quotidien"}' && echo " ✓ éveillé"
 
   monthly-activity:
     if: github.event.schedule == '41 4 1 * *' || github.event_name == 'workflow_dispatch'
