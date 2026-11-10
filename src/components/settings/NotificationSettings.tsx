@@ -13,11 +13,12 @@ const CATEGORIES = [
   ['assigned', '👉 Tâche qui m’est attribuée'],
   ['notes', '💌 Mots doux'],
   ['nights', '🌙 Tour de garde des nuits (à 21 h)'],
+  ['meds', '💊 Soin du jour pas encore noté'],
   ['backup', '💾 Rappel de sauvegarde (le 1er du mois)'],
 ] as const
 
 type Prefs = Record<(typeof CATEGORIES)[number][0], boolean>
-const DEFAULT: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true, nights: true }
+const DEFAULT: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true, nights: true, meds: true }
 
 export function NotificationSettings() {
   const { memberId, householdId, setSetting } = useStore()

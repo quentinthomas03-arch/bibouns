@@ -18,9 +18,9 @@ const base = (now: string, over: Partial<ReminderInput> = {}): ReminderInput => 
 
 describe('rappels push', () => {
   it('heure de Paris (été / hiver)', () => {
-    expect(parisParts(new Date('2027-07-01T07:30:00Z'))).toEqual({ date: '2027-07-01', hour: 9 })
-    expect(parisParts(new Date('2027-01-15T08:10:00Z'))).toEqual({ date: '2027-01-15', hour: 9 })
-    expect(parisParts(new Date('2027-01-15T23:30:00Z'))).toEqual({ date: '2027-01-16', hour: 0 })
+    expect(parisParts(new Date('2027-07-01T07:30:00Z'))).toEqual({ date: '2027-07-01', hour: 9, minute: 30 })
+    expect(parisParts(new Date('2027-01-15T08:10:00Z'))).toEqual({ date: '2027-01-15', hour: 9, minute: 10 })
+    expect(parisParts(new Date('2027-01-15T23:30:00Z'))).toEqual({ date: '2027-01-16', hour: 0, minute: 30 })
   })
 
   it('rendez-vous : la veille, dans la fenêtre de 15 min', () => {
@@ -79,6 +79,22 @@ describe('rappels push', () => {
       ['night:2027-05-11:rest', ['a']],
     ])
     expect(computeReminders(base('2027-05-11T19:05:00Z', { baby, nightShift: { ...nightShift, enabled: false } }))).toHaveLength(0)
+  })
+
+  it('rappel de vitamine : à l’heure choisie, seulement si elle n’est pas notée', () => {
+    const baby = { first_name: 'Louise', born_at: '2027-05-04T01:12:00Z' }
+    const medReminder = { enabled: true, name: 'Vitamine D', time: '18:30' }
+    // 18 h 35 à Paris = 16 h 35 UTC (été)
+    const r = computeReminders(base('2027-06-10T16:35:00Z', { baby, medReminder, medEvents: [] }))
+    expect(r.map((x) => x.key)).toEqual(['med:2027-06-10:vitamine d'])
+    expect(r[0].memberIds).toEqual(['q', 'a'])
+    // déjà notée ce jour-là (le matin) : pas de rappel
+    expect(computeReminders(base('2027-06-10T16:35:00Z', { baby, medReminder, medEvents: [{ name: 'vitamine d', started_at: '2027-06-10T06:00:00Z' }] }))).toHaveLength(0)
+    // notée la veille : rappel quand même
+    expect(computeReminders(base('2027-06-10T16:35:00Z', { baby, medReminder, medEvents: [{ name: 'Vitamine D', started_at: '2027-06-09T16:00:00Z' }] }))).toHaveLength(1)
+    // trop tôt / trop tard
+    expect(computeReminders(base('2027-06-10T16:25:00Z', { baby, medReminder }))).toHaveLength(0)
+    expect(computeReminders(base('2027-06-10T16:50:00Z', { baby, medReminder }))).toHaveLength(0)
   })
 
   it('la règle du tour de garde est identique côté serveur et côté appli', () => {

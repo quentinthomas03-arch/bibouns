@@ -16,8 +16,16 @@ export interface Prefs {
   notes: boolean
   backup: boolean
   nights: boolean
+  meds: boolean
 }
-export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true, nights: true }
+
+export interface MedReminderCfg {
+  enabled: boolean
+  name: string
+  /** "HH:MM", heure de Paris */
+  time: string
+}
+export const DEFAULT_PREFS: Prefs = { appointments: true, vaccines: true, deadlines: true, assigned: true, notes: true, backup: true, nights: true, meds: true }
 
 export interface NightShiftCfg {
   enabled: boolean
@@ -53,6 +61,9 @@ export interface ReminderInput {
   vaccineDoses: { code: string; label: string; months: number }[]
   vaccinesDone: string[]
   nightShift?: NightShiftCfg | null
+  medReminder?: MedReminderCfg | null
+  /** soins (noms) déjà notés, avec leur heure de début (ISO) */
+  medEvents?: { name: string; started_at: string }[]
 }
 
 const TZ = 'Europe/Paris'
@@ -60,9 +71,9 @@ const TZ = 'Europe/Paris'
 const WINDOW_MS = 15 * 60_000
 
 /** Date (AAAA-MM-JJ) et heure à Paris. */
-export function parisParts(d: Date): { date: string; hour: number } {
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(d).map((x) => [x.type, x.value]))
-  return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) }
+export function parisParts(d: Date): { date: string; hour: number; minute: number } {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map((x) => [x.type, x.value]))
+  return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour), minute: Number(p.minute) }
 }
 
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(a + 'T12:00:00Z') - Date.parse(b + 'T12:00:00Z')) / 86_400_000)
@@ -84,7 +95,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   const out: Reminder[] = []
   const all = input.members.map((m) => m.id)
   const now = input.now.getTime()
-  const { date: today, hour } = parisParts(input.now)
+  const { date: today, hour, minute } = parisParts(input.now)
   const morning = hour === 9 // rappels "du jour" entre 9 h et 10 h, heure de Paris
 
   // Rendez-vous
@@ -105,6 +116,17 @@ export function computeReminders(input: ReminderInput): Reminder[] {
           category: 'appointments',
         })
       }
+    }
+  }
+
+  // Rappel de soin (ex. vitamine) : à l'heure choisie, seulement s'il n'a pas été noté aujourd'hui
+  const med = input.medReminder
+  if (med?.enabled && med.name && input.baby?.born_at && /^\d{2}:\d{2}$/.test(med.time)) {
+    const [h, m] = med.time.split(':').map(Number)
+    const elapsed = hour * 60 + minute - (h * 60 + m)
+    const given = (input.medEvents ?? []).some((e) => e.name.trim().toLowerCase() === med.name.trim().toLowerCase() && parisParts(new Date(e.started_at)).date === today)
+    if (elapsed >= 0 && elapsed < 15 && !given) {
+      out.push({ key: `med:${today}:${med.name.toLowerCase()}`, memberIds: all, title: `💊 ${med.name} pas encore notée`, body: 'Si c’est fait, notez-la dans l’appli (bouton +). Sinon, c’est le moment !', url: './#/', category: 'meds' })
     }
   }
 

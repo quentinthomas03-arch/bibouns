@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/Toast'
 import { toLocalInput } from '@/components/pregnancy/Sheets'
 import { usePhase } from '@/app/phase'
 import { useFeeding, useMeds } from '@/app/baby'
-import { useStore, stableId } from '@/sync/store'
+import { useSetting, useStore, stableId } from '@/sync/store'
 import { FEEDING_HINT } from '@/content/baby'
 
 /** Réglages bébé : identité, alimentation, soins habituels. */
@@ -16,6 +16,7 @@ export function BabySettings() {
   const { baby } = usePhase()
   const feeding = useFeeding()
   const meds = useMeds()
+  const medReminder = useSetting<{ enabled: boolean; name: string; time: string } | null>('med_reminder', null)
   const { save, setSetting, householdId } = useStore()
   const toast = useToast()
   const [firstName, setFirstName] = useState('')
@@ -100,6 +101,32 @@ export function BabySettings() {
               </button>
             </span>
           ))}
+        </div>
+        <div className="rounded-2xl bg-surface-2 p-3 flex flex-col gap-2">
+          <label className="flex items-center justify-between gap-3 min-h-11">
+            <span className="font-semibold">🔔 Me rappeler si ce n’est pas noté</span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={!!medReminder?.enabled}
+              onChange={(e) => setSetting('med_reminder', { name: medReminder?.name ?? meds[0] ?? 'Vitamine D', time: medReminder?.time ?? '18:00', enabled: e.target.checked })}
+              className="appearance-none shrink-0 w-14 h-8 rounded-full bg-line checked:bg-sage relative transition-colors cursor-pointer before:absolute before:top-1 before:left-1 before:size-6 before:rounded-full before:bg-surface before:shadow before:transition-transform checked:before:translate-x-6"
+            />
+          </label>
+          {medReminder?.enabled && (
+            <div className="flex flex-wrap items-center gap-2">
+              {meds.map((m) => (
+                <button key={m} type="button" aria-pressed={medReminder.name === m} onClick={() => setSetting('med_reminder', { ...medReminder, name: m })} className={`press min-h-10 px-3 rounded-full text-sm font-semibold ${medReminder.name === m ? 'bg-ink text-bg' : 'bg-surface'}`}>
+                  {m}
+                </button>
+              ))}
+              <label className="flex items-center gap-2 ml-auto font-semibold text-sm">
+                à
+                <input type="time" value={medReminder.time} onChange={(e) => e.target.value && setSetting('med_reminder', { ...medReminder, time: e.target.value })} className="min-h-10 rounded-xl bg-surface px-2 border-2 border-transparent focus:border-primary" aria-label="Heure du rappel" />
+              </label>
+            </div>
+          )}
+          <p className="text-xs text-ink-soft">Une notification à vous deux, seulement si le soin n’a pas encore été noté ce jour-là (heure de Paris).</p>
         </div>
         <form
           className="flex gap-2"
