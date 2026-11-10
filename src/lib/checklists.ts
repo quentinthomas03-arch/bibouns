@@ -68,3 +68,15 @@ export const between = (a: number | undefined, b: number | undefined) =>
   a === undefined && b === undefined ? 0 : a === undefined ? b! - 1 : b === undefined ? a + 1 : (a + b) / 2
 
 export { CHECKLIST_TEMPLATES }
+
+/**
+ * « Mes tâches » pour l'accueil : ce qui m'est attribué (non fait), trié par
+ * échéance, + les tâches sans responsable qui arrivent dans les 3 jours.
+ */
+export function myTasks<T extends Pick<ItemRow, 'id' | 'done' | 'assignee' | 'due_date'>>(items: T[], memberId: string, today: string, limit = 5): T[] {
+  const soon = new Date(today + 'T12:00')
+  soon.setDate(soon.getDate() + 3)
+  const soonIso = soon.toISOString().slice(0, 10)
+  const mine = items.filter((i) => !i.done && (i.assignee === memberId || (!i.assignee && i.due_date && i.due_date <= soonIso)))
+  return mine.sort((a, b) => (a.due_date ?? '9999').localeCompare(b.due_date ?? '9999')).slice(0, limit)
+}

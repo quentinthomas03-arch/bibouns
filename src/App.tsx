@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useSession } from '@/app/session'
-import { useTheme } from '@/app/theme'
+import { useTextSize, useTheme } from '@/app/theme'
 import { TabBar } from '@/components/TabBar'
 import { QuickSheet } from '@/components/QuickSheet'
 import { Biboun } from '@/components/Biboun'
@@ -31,6 +31,7 @@ const PublicWishlist = lazy(() => import('@/screens/PublicWishlist').then((m) =>
 
 export function App() {
   useTheme() // applique le thème choisi sur ce téléphone
+  useTextSize() // et la taille du texte
   const { status } = useSession()
   const [skipInstall, setSkipInstall] = useState(false)
 

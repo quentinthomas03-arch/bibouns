@@ -2,6 +2,7 @@ import { Square, Repeat } from 'lucide-react'
 import { useBabyActions, useBabyEvents } from '@/app/baby'
 import { useMembers } from '@/app/members'
 import { useNow } from '@/app/useNow'
+import { useToast } from '@/components/ui/Toast'
 import { usePhase } from '@/app/phase'
 import { formatTime, running } from '@/lib/baby'
 
@@ -15,7 +16,12 @@ function elapsed(from: string, now: Date) {
 /** Tétée / sommeil en cours, visibles sur les deux téléphones, arrêtables en 1 tap. */
 export function RunningTimers() {
   const events = useBabyEvents()
-  const { stop, start } = useBabyActions()
+  const { stop, start, resume, undo } = useBabyActions()
+  const toast = useToast()
+  const stopWithUndo = async (e: Parameters<typeof stop>[0], msg: string) => {
+    await stop(e)
+    toast(msg, { label: 'Annuler', run: () => resume(e) })
+  }
   const { byId } = useMembers()
   const now = useNow(1000)
   const { baby } = usePhase()
@@ -42,13 +48,14 @@ export function RunningTimers() {
             aria-label="Changer de côté"
             onClick={async () => {
               await stop(feed)
-              await start('feed', { mode: 'breast', side: feed.data.side === 'L' ? 'R' : 'L' })
+              const r = await start('feed', { mode: 'breast', side: feed.data.side === 'L' ? 'R' : 'L' })
+              toast('Côté changé', { label: 'Annuler', run: async () => { await undo(r); await resume(feed) } })
             }}
             className="press size-12 rounded-2xl bg-surface grid place-items-center"
           >
             <Repeat size={20} />
           </button>
-          <button aria-label="Arrêter la tétée" onClick={() => stop(feed)} className="press size-12 rounded-2xl bg-primary text-primary-ink grid place-items-center">
+          <button aria-label="Arrêter la tétée" onClick={() => stopWithUndo(feed, 'Tétée terminée')} className="press size-12 rounded-2xl bg-primary text-primary-ink grid place-items-center">
             <Square size={20} fill="currentColor" />
           </button>
         </div>
@@ -63,7 +70,7 @@ export function RunningTimers() {
             <p className="text-sm text-ink-soft">depuis {formatTime(sleep.started_at)}</p>
           </div>
           <span className="font-display text-2xl tabular-nums">{elapsed(sleep.started_at, now)}</span>
-          <button aria-label="Réveil : arrêter le sommeil" onClick={() => stop(sleep)} className="press min-h-12 px-3 rounded-2xl bg-ink text-bg font-bold">
+          <button aria-label="Réveil : arrêter le sommeil" onClick={() => stopWithUndo(sleep, 'Réveil noté ☀️')} className="press min-h-12 px-3 rounded-2xl bg-ink text-bg font-bold">
             ☀️ Réveil
           </button>
         </div>

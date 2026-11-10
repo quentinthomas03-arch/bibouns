@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useSession } from '@/app/session'
 import { useMembers } from '@/app/members'
 import { usePhase } from '@/app/phase'
-import { useTheme, type ThemePref } from '@/app/theme'
+import { useTextSize, useTheme, type TextSize, type ThemePref } from '@/app/theme'
 import { useRows, useStore } from '@/sync/store'
 import type { BaseRow } from '@/sync/tables'
 import { supabase } from '@/lib/supabase'
@@ -27,6 +27,7 @@ export function Settings() {
   const { dueDate } = usePhase()
   const { signOut, sync } = useSession()
   const [theme, setTheme] = useTheme()
+  const [textSize, setTextSize] = useTextSize()
   const toast = useToast()
   const [name, setName] = useState('')
   const [due, setDue] = useState('')
@@ -132,10 +133,25 @@ export function Settings() {
         onChange={setTheme}
         options={[
           { value: 'auto', label: t.themeAuto },
+          { value: 'hour', label: '🕘 Heure' },
           { value: 'light', label: t.themeLight },
           { value: 'dark', label: t.themeDark },
         ]}
       />
+      <p className="text-xs text-ink-soft px-1 mt-1">Auto : suit l’iPhone · Heure : veilleuse de 21 h à 7 h · réglage propre à ce téléphone.</p>
+      <div className="mt-3">
+        <Segmented<TextSize>
+          label="Taille du texte"
+          value={textSize}
+          onChange={setTextSize}
+          options={[
+            { value: 'normal', label: 'A' },
+            { value: 'large', label: 'A+' },
+            { value: 'xlarge', label: 'A++' },
+          ]}
+        />
+        <p className="text-xs text-ink-soft px-1 mt-1">Taille du texte sur ce téléphone.</p>
+      </div>
 
       <SectionTitle>{t.security}</SectionTitle>
       <Card className="flex flex-col gap-3">

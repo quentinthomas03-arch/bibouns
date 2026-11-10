@@ -22,7 +22,7 @@ export function QuickBaby({ onDone, onQuestion }: { onDone: () => void; onQuesti
   const events = useBabyEvents()
   const feeding = useFeeding()
   const meds = useMeds()
-  const { log, start, stop } = useBabyActions()
+  const { log, start, stop, undo, resume } = useBabyActions()
   const toast = useToast()
   const [details, setDetails] = useState<null | 'feed' | 'diaper' | 'sleep' | 'med'>(null)
   const feedRunning = running(events, 'feed')
@@ -30,26 +30,27 @@ export function QuickBaby({ onDone, onQuestion }: { onDone: () => void; onQuesti
   const ml = lastBottleMl(events)
   const side = nextSide(events)
 
-  const done = (msg: string) => {
-    toast(msg)
+  /** confirmation avec « Annuler » (faux tap à 3 h du matin) */
+  const done = (msg: string, cancel: () => Promise<unknown>) => {
+    toast(msg, { label: 'Annuler', run: async () => { await cancel(); toast('Annulé ↩️') } })
     onDone()
   }
 
   const actions: Action[] = []
-  if (feeding.bottle) actions.push({ key: 'bottle', emoji: '🍼', label: `Biberon ${ml} ml`, sub: lastOf(events, 'feed', (e) => e.data.mode === 'bottle') ? 'comme la dernière fois' : 'modifiable ensuite', run: async () => { await log('feed', { mode: 'bottle', ml }); done(`Biberon ${ml} ml noté 🍼`) } })
+  if (feeding.bottle) actions.push({ key: 'bottle', emoji: '🍼', label: `Biberon ${ml} ml`, sub: lastOf(events, 'feed', (e) => e.data.mode === 'bottle') ? 'comme la dernière fois' : 'modifiable ensuite', run: async () => { const r = await log('feed', { mode: 'bottle', ml }); done(`Biberon ${ml} ml noté 🍼`, () => undo(r)) } })
   if (feeding.breast && !feedRunning) {
-    actions.push({ key: 'L', emoji: '🤱', label: 'Tétée gauche', sub: side === 'L' ? 'conseillé' : undefined, tone: side === 'L' ? 'ring-2 ring-primary' : '', run: async () => { await start('feed', { mode: 'breast', side: 'L' }); done('Chrono lancé ⏱️') } })
-    actions.push({ key: 'R', emoji: '🤱', label: 'Tétée droite', sub: side === 'R' ? 'conseillé' : undefined, tone: side === 'R' ? 'ring-2 ring-primary' : '', run: async () => { await start('feed', { mode: 'breast', side: 'R' }); done('Chrono lancé ⏱️') } })
+    actions.push({ key: 'L', emoji: '🤱', label: 'Tétée gauche', sub: side === 'L' ? 'conseillé' : undefined, tone: side === 'L' ? 'ring-2 ring-primary' : '', run: async () => { const r = await start('feed', { mode: 'breast', side: 'L' }); done('Chrono lancé ⏱️', () => undo(r)) } })
+    actions.push({ key: 'R', emoji: '🤱', label: 'Tétée droite', sub: side === 'R' ? 'conseillé' : undefined, tone: side === 'R' ? 'ring-2 ring-primary' : '', run: async () => { const r = await start('feed', { mode: 'breast', side: 'R' }); done('Chrono lancé ⏱️', () => undo(r)) } })
   }
-  actions.push({ key: 'pee', emoji: '💧', label: 'Pipi', run: async () => { await log('diaper', { pee: true, poo: false }); done('Couche notée 💧') } })
-  actions.push({ key: 'poo', emoji: '💩', label: 'Caca', run: async () => { await log('diaper', { pee: false, poo: true }); done('Couche notée 💩') } })
-  actions.push({ key: 'both', emoji: '💧💩', label: 'Les deux', run: async () => { await log('diaper', { pee: true, poo: true }); done('Couche notée') } })
+  actions.push({ key: 'pee', emoji: '💧', label: 'Pipi', run: async () => { const r = await log('diaper', { pee: true, poo: false }); done('Couche notée 💧', () => undo(r)) } })
+  actions.push({ key: 'poo', emoji: '💩', label: 'Caca', run: async () => { const r = await log('diaper', { pee: false, poo: true }); done('Couche notée 💩', () => undo(r)) } })
+  actions.push({ key: 'both', emoji: '💧💩', label: 'Les deux', run: async () => { const r = await log('diaper', { pee: true, poo: true }); done('Couche notée', () => undo(r)) } })
   actions.push(
     sleepRunning
-      ? { key: 'wake', emoji: '☀️', label: 'Réveil', sub: 'arrête le sommeil', run: async () => { await stop(sleepRunning); done('Bien dormi ? ☀️') } }
-      : { key: 'sleep', emoji: '😴', label: 'Dodo', sub: 'lance le chrono', run: async () => { await start('sleep'); done('Chut… 😴') } },
+      ? { key: 'wake', emoji: '☀️', label: 'Réveil', sub: 'arrête le sommeil', run: async () => { const e = sleepRunning; await stop(e); done('Bien dormi ? ☀️', () => resume(e)) } }
+      : { key: 'sleep', emoji: '😴', label: 'Dodo', sub: 'lance le chrono', run: async () => { const r = await start('sleep'); done('Chut… 😴', () => undo(r)) } },
   )
-  for (const m of meds) actions.push({ key: `med-${m}`, emoji: '💊', label: m, run: async () => { await log('med', { name: m }); done(`${m} noté 💊`) } })
+  for (const m of meds) actions.push({ key: `med-${m}`, emoji: '💊', label: m, run: async () => { const r = await log('med', { name: m }); done(`${m} noté 💊`, () => undo(r)) } })
 
   return (
     <div className="flex flex-col gap-4">

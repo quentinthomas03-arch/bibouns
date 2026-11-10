@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, Gift, Plus, Trash2, CalendarClock, StickyNote } from 'lucide-react'
 import { WishlistShare } from '@/components/WishlistShare'
+import { SwipeRow } from '@/components/ui/SwipeRow'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -59,6 +60,11 @@ export function ListDetail() {
     const last = (items ?? []).reduce((m, i) => Math.max(m, i.position), -1)
     await save('checklist_items', { checklist_id: id, label: text.trim(), done: false, position: between(last, undefined) })
     setText('')
+  }
+
+  const deleteWithUndo = async (i: Item) => {
+    await remove('checklist_items', i.id)
+    toast(`« ${i.label.slice(0, 24)} » supprimé`, { label: 'Annuler', run: () => patch('checklist_items', i.id, { deleted_at: null }) })
   }
 
   const toggle = (i: Item) =>
@@ -137,7 +143,9 @@ export function ListDetail() {
           const doneBy = byId(i.done_by)
           const late = !i.done && i.due_date && i.due_date < today()
           return (
-            <li key={i.id} className={`flex items-center gap-2 rounded-3xl bg-surface shadow-soft pr-3 ${i.done ? 'opacity-60' : ''}`}>
+            <li key={i.id}>
+              <SwipeRow onDelete={() => deleteWithUndo(i)}>
+              <div className={`flex items-center gap-2 rounded-3xl bg-surface shadow-soft pr-3 ${i.done ? 'opacity-60' : ''}`}>
               <button
                 onClick={() => void toggle(i)}
                 aria-label={i.done ? `Décocher ${i.label}` : `Cocher ${i.label}`}
@@ -167,6 +175,8 @@ export function ListDetail() {
                 </span>
               </button>
               {assignee && <Avatar emoji={assignee.avatar} color={assignee.color} size={30} label={`Pour ${assignee.first_name}`} />}
+              </div>
+              </SwipeRow>
             </li>
           )
         })}

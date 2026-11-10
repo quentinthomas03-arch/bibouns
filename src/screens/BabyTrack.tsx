@@ -13,6 +13,9 @@ import { usePhase } from '@/app/phase'
 import { addDays, balanceMessage, daySummary, formatDuration, formatTime, nights, NIGHT_LENGTH_MIN, shareStats, startOfDay } from '@/lib/baby'
 import { BABY_EMPTY, KIND_EMOJI } from '@/content/baby'
 import { ParentsTab } from '@/components/baby/ParentsTab'
+import { SwipeRow } from '@/components/ui/SwipeRow'
+import { useToast } from '@/components/ui/Toast'
+import { useStore } from '@/sync/store'
 
 type Tab = 'jour' | 'semaine' | 'nuits' | 'duo' | 'nous'
 const TABS: [Tab, string][] = [
@@ -54,6 +57,12 @@ function Day() {
   const now = useNow(60_000)
   const [offset, setOffset] = useState(0)
   const [editing, setEditing] = useState<BabyEventRow | null>(null)
+  const { remove, patch } = useStore()
+  const toast = useToast()
+  const deleteWithUndo = async (e: BabyEventRow) => {
+    await remove('baby_events', e.id)
+    toast(`${describeEvent(e)} supprimé`, { label: 'Annuler', run: () => patch('baby_events', e.id, { deleted_at: null }) })
+  }
   const day = addDays(startOfDay(now), offset)
   const next = addDays(day, 1)
   const list = events.filter((e) => {
@@ -100,6 +109,7 @@ function Day() {
           const who = byId(e.created_by)
           return (
             <li key={e.id}>
+              <SwipeRow onDelete={() => deleteWithUndo(e)}>
               <button onClick={() => setEditing(e)} className="press w-full flex items-center gap-3 rounded-3xl bg-surface shadow-soft p-3 text-left">
                 <span className="font-display text-lg w-14 tabular-nums">{formatTime(e.started_at)}</span>
                 <span className="text-2xl" aria-hidden>
@@ -108,6 +118,7 @@ function Day() {
                 <span className="flex-1 font-semibold leading-tight">{describeEvent(e)}</span>
                 {who && <Avatar emoji={who.avatar} color={who.color} size={28} label={`Noté par ${who.first_name}`} />}
               </button>
+              </SwipeRow>
             </li>
           )
         })}

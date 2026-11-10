@@ -21,8 +21,12 @@ export function useMeds() {
 
 /** Actions de saisie (1 appel = 1 ligne synchronisée). */
 export function useBabyActions() {
-  const { save, patch } = useStore()
+  const { save, patch, remove } = useStore()
   return {
+    /** annule une saisie (suppression douce, synchronisée) */
+    undo: (row: { id: string }) => remove('baby_events', row.id),
+    /** relance un chrono arrêté par erreur */
+    resume: (e: BabyEventRow) => patch('baby_events', e.id, { ended_at: null }),
     log: (kind: BabyEvent['kind'], data: BabyEvent['data'], started_at = nowIso(), ended_at: string | null = null) =>
       save('baby_events', { kind, data, started_at, ended_at }),
     start: (kind: 'feed' | 'sleep', data: BabyEvent['data'] = {}) => save('baby_events', { kind, data, started_at: nowIso(), ended_at: null }),

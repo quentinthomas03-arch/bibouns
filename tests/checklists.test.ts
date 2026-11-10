@@ -46,3 +46,20 @@ describe('statistiques', () => {
     expect(between(3, undefined)).toBe(4)
   })
 })
+
+import { myTasks } from '../src/lib/checklists'
+describe('mes tâches (accueil)', () => {
+  const items = [
+    { id: '1', done: false, assignee: 'q', due_date: '2027-01-20' },
+    { id: '2', done: false, assignee: 'q', due_date: null },
+    { id: '3', done: true, assignee: 'q', due_date: '2027-01-02' },
+    { id: '4', done: false, assignee: 'a', due_date: '2027-01-02' },
+    { id: '5', done: false, assignee: null, due_date: '2027-01-03' },
+    { id: '6', done: false, assignee: null, due_date: '2027-01-30' },
+    { id: '7', done: false, assignee: 'q', due_date: '2026-12-28' },
+  ]
+  it('mes tâches + les urgentes sans responsable, par échéance (retards en premier)', () => {
+    expect(myTasks(items, 'q', '2027-01-01').map((i) => i.id)).toEqual(['7', '5', '1', '2'])
+  })
+  it('limite', () => expect(myTasks(items, 'q', '2027-01-01', 2).map((i) => i.id)).toEqual(['7', '5']))
+})

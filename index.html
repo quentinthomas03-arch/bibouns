@@ -20,8 +20,11 @@
       (function () {
         try {
           var pref = localStorage.getItem('bibouns.theme') || 'auto'
-          var dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+          var h = new Date().getHours()
+          var dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches) || (pref === 'hour' && (h >= 21 || h < 7))
           if (dark) document.documentElement.classList.add('dark')
+          var size = { large: '112.5%', xlarge: '125%' }[localStorage.getItem('bibouns.textsize')]
+          if (size) document.documentElement.style.fontSize = size
         } catch (e) {}
       })()
     </script>

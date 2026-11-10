@@ -19,7 +19,8 @@ export function Night() {
   const events = useBabyEvents()
   const feeding = useFeeding()
   const { baby } = usePhase()
-  const { log, start, stop } = useBabyActions()
+  const { log, start, stop, undo, resume } = useBabyActions()
+  const [lastUndo, setLastUndo] = useState<null | (() => Promise<unknown>)>(null)
   const now = useNow(1000)
   const [flash, setFlash] = useState<string | null>(null)
   const noise = useRef<NoiseHandle | null>(null)
@@ -54,10 +55,14 @@ export function Night() {
     }
   }, [])
 
-  const act = async (label: string, fn: () => Promise<unknown>) => {
-    await fn()
+  /** fn renvoie la ligne créée (annulable) ou rien ; `cancel` permet un retour arrière précis */
+  const act = async (label: string, fn: () => Promise<unknown>, cancel?: () => Promise<unknown>) => {
+    const r = (await fn()) as { id?: string } | undefined
     setFlash(label)
+    const u = cancel ?? (r?.id ? () => undo(r as { id: string }) : null)
+    setLastUndo(() => u)
     setTimeout(() => setFlash(null), 1500)
+    setTimeout(() => setLastUndo((cur) => (cur === u ? null : cur)), 8000)
   }
   const elapsed = (from: string) => formatDuration(Math.floor((now.getTime() - Date.parse(from)) / 60000))
   const Btn = ({ label, sub, onClick, active }: { label: string; sub?: string; onClick: () => void; active?: boolean }) => (
@@ -85,10 +90,25 @@ export function Night() {
           {flash ?? (feed ? `Tétée ${feed.data.side === 'L' ? 'gauche' : 'droite'} · ${elapsed(feed.started_at)}` : sleep ? `Dort depuis ${elapsed(sleep.started_at)}` : lastFeed ? `Dernier repas ${timeAgo(lastFeed.started_at, now)} · ${describeEvent(lastFeed)}` : 'Aucun repas noté')}
         </p>
 
+        {lastUndo && (
+          <button
+            onClick={async () => {
+              const u = lastUndo
+              setLastUndo(null)
+              await u()
+              setFlash('Annulé ↩')
+              setTimeout(() => setFlash(null), 1500)
+            }}
+            className="press self-center min-h-12 px-6 rounded-full font-bold"
+            style={{ border: `2px solid ${C.text}`, color: C.text }}
+          >
+            ↩ Annuler la dernière saisie
+          </button>
+        )}
         <div className="grid grid-cols-2 gap-3 mt-2">
           {feed ? (
             <>
-              <Btn label="⏹ Fin tétée" sub={elapsed(feed.started_at)} active onClick={() => act('Tétée terminée', () => stop(feed))} />
+              <Btn label="⏹ Fin tétée" sub={elapsed(feed.started_at)} active onClick={() => act('Tétée terminée', () => stop(feed), () => resume(feed))} />
               <Btn label="⇄ Changer" sub={`passer ${feed.data.side === 'L' ? 'à droite' : 'à gauche'}`} onClick={() => act('Côté changé', async () => { await stop(feed); await start('feed', { mode: 'breast', side: feed.data.side === 'L' ? 'R' : 'L' }) })} />
             </>
           ) : (
@@ -98,7 +118,7 @@ export function Night() {
             </>
           )}
           {feeding.bottle && <Btn label={`Biberon ${ml}`} sub="ml" onClick={() => act(`Biberon ${ml} ml noté`, () => log('feed', { mode: 'bottle', ml }))} />}
-          {sleep ? <Btn label="☀ Réveil" sub={elapsed(sleep.started_at)} active onClick={() => act('Réveil noté', () => stop(sleep))} /> : <Btn label="Dodo" sub="lance le chrono" onClick={() => act('Dodo lancé', () => start('sleep'))} />}
+          {sleep ? <Btn label="☀ Réveil" sub={elapsed(sleep.started_at)} active onClick={() => act('Réveil noté', () => stop(sleep), () => resume(sleep))} /> : <Btn label="Dodo" sub="lance le chrono" onClick={() => act('Dodo lancé', () => start('sleep'))} />}
           <Btn label="Pipi" onClick={() => act('Pipi noté', () => log('diaper', { pee: true, poo: false }))} />
           <Btn label="Caca" onClick={() => act('Caca noté', () => log('diaper', { pee: false, poo: true }))} />
           <Btn label="Les deux" onClick={() => act('Couche notée', () => log('diaper', { pee: true, poo: true }))} />

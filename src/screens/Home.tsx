@@ -14,6 +14,7 @@ import type { Phase } from '@/lib/phase'
 import { WeekCard } from '@/components/home/WeekCard'
 import { NextMilestones } from '@/components/home/NextMilestones'
 import { BabySummary } from '@/components/baby/BabySummary'
+import { MyTasks } from '@/components/home/MyTasks'
 import { ContractionTimer } from '@/components/ContractionTimer'
 import { notifyPartner } from '@/lib/push'
 import { countdown, greetings, notes as tn, phases, settings as ts } from '@/content/fr'
@@ -67,6 +68,7 @@ export function Home() {
       {phase === 'after' && <BabySummary name={(baby?.first_name as string) || 'Biboun'} bornAt={(baby?.born_at as string) ?? null} />}
       {phase !== 'dday' && dueDate && <NextMilestones dueDate={dueDate} bornAt={(baby?.born_at as string) ?? null} />}
 
+      {phase !== 'dday' && <MyTasks />}
       {!partner && <InviteCard />}
       <LoveNotes />
     </div>
