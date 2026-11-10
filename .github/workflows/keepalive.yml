@@ -1,11 +1,26 @@
-# Supabase (offre gratuite) met en pause un projet inactif 7 jours.
-# Ce petit appel quotidien le garde éveillé. Il ne lit aucune donnée (RLS).
+# =============================================================================
+# Garde-fous de long terme
+#  1. Ping quotidien de Supabase (l'offre gratuite met en pause un projet
+#     inactif 7 jours). Une vraie requête API = activité. Échoue (croix rouge
+#     + e-mail de GitHub) si le projet est en pause : à relancer sur supabase.com.
+#  2. Petit commit mensuel : GitHub désactive les tâches planifiées d'un dépôt
+#     public sans activité pendant 60 jours. Ce commit garde le dépôt "actif".
+#     [skip ci] : il ne relance ni les tests ni le déploiement.
+#  3. Le 1er octobre : un ticket « revérifier les contenus santé » (calendrier
+#     vaccinal, congés…) qui changent chaque année.
+# =============================================================================
 name: Garder Supabase éveillé
 
 on:
   schedule:
-    - cron: '23 5 * * *'
+    - cron: '23 5 * * *'   # tous les jours
+    - cron: '41 4 1 * *'   # le 1er de chaque mois
+    - cron: '47 7 1 10 *'  # le 1er octobre
   workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   ping:
@@ -21,3 +36,35 @@ jobs:
             "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/api-keys" | jq -r '[.[] | select(.name=="anon")][0].api_key')
           curl -fsS "https://$SUPABASE_PROJECT_REF.supabase.co/rest/v1/households?select=id&limit=1" \
             -H "apikey: $KEY" -H "Authorization: Bearer $KEY" && echo " ✓ éveillé"
+
+  monthly-activity:
+    if: github.event.schedule == '41 4 1 * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit d'activité
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/keepalive.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive.txt
+          git commit -m "Maintien des tâches planifiées (activité mensuelle) [skip ci]" || exit 0
+          git push
+
+  yearly-health-review:
+    if: github.event.schedule == '47 7 1 10 *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ticket de revérification annuelle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Revérifier les contenus santé et démarches ($(date +%Y))" \
+            --body "Rappel annuel : le calendrier vaccinal, les congés (paternité, naissance), les examens de l'enfant et les échéances changent régulièrement.
+
+          À revérifier sur les sources officielles (HAS, ministère de la Santé, ameli.fr, service-public.fr), puis mettre à jour :
+          - src/content/health.ts (vaccins, examens) et supabase/functions/_shared/vaccines.ts
+          - src/content/milestones.ts (échéances, congés)
+          - src/content/weeks.ts, src/content/parents.ts, src/content/dday.ts
+          Puis lancer les tests. Astuce : demander à Claude de le faire."
