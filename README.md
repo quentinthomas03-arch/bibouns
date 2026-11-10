@@ -146,7 +146,19 @@ Chaque catégorie se coupe séparément, par personne.
 | ❓ **Carnet de questions** | Bouton + → Question | Les questions notées au fil de l'eau ressortent dans l'onglet RDV (grossesse) ou Carnet de santé → RDV (bébé), à cocher avec la réponse. |
 | 🌙 **Tour de garde des nuits** | Accueil (après la naissance) | Une nuit chacun, échange en 1 tap, notification à 21 h (« c'est ton tour » / « repose-toi »). |
 | 🔊 **Bruit doux** | Mode nuit | Bruit brun généré par le téléphone, arrêt automatique (15 min, 30 min, 1 h ou sans fin). |
+| ↩️ **Annuler** | Après chaque saisie en 1 tap | 5 secondes pour annuler un faux tap (bouton +, chronos, mode nuit). |
+| 👈 **Glisser pour supprimer** | Listes, journal du jour | Glisser une ligne vers la gauche → Supprimer (avec Annuler). |
+| ✅ **Mes tâches** | Accueil | Mes éléments de listes à faire + les urgents sans responsable. |
+| 💊 **Rappel du soin du jour** | Réglages → Soins en 1 tap | Notification à l'heure choisie si la vitamine n'est pas notée. |
+| 🕘 **Veilleuse selon l'heure** · 🔠 **Taille du texte** | Réglages → Apparence | Sombre automatiquement de 21 h à 7 h ; texte A / A+ / A++. |
+| 📤 **Photos hors ligne** | Partout | Les photos partent automatiquement au retour du réseau. |
 | 🎁 **Liste de naissance** | Une liste → icône cadeau | Lien public pour la famille : noms des articles seulement (ni prix, ni notes). Chacun réserve avec son prénom. Lien désactivable. |
+
+## 3 quinquies. Garde-fous automatiques
+
+- **Ping quotidien** de Supabase (`.github/workflows/keepalive.yml`). En cas d'échec, l'étape est rouge dans GitHub et un e-mail arrive : le projet est peut-être en pause, il suffit de le relancer sur supabase.com.
+- **Commit mensuel automatique** (`.github/keepalive.txt`, `[skip ci]`) : GitHub désactive les tâches planifiées d'un dépôt public resté 60 jours sans activité. Ce commit l'en empêche.
+- **Revérification annuelle des contenus santé** : un ticket GitHub le 1er octobre, et une tâche planifiée Claude le 2 octobre. Elle revérifie les sources officielles et propose une pull request à valider.
 
 ## 4. Sauvegarder et exporter
 
