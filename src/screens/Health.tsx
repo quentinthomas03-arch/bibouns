@@ -17,6 +17,8 @@ import { examSchedule, rsvDate, vaccineSchedule, type ScheduledDose } from '@/li
 import { deletePhoto, uploadPhoto } from '@/lib/photos'
 import { PrivatePhoto } from '@/components/PrivatePhoto'
 import { QuestionsPanel } from '@/components/Questions'
+import { CheckCircle } from '@/components/MilestoneCheck'
+import { useToggleAppointment } from '@/screens/Track'
 import { DOC_KINDS, EXAMS_DISCLAIMER, GROWTH_NOTE, RSV_INFO, VACCINE_DISCLAIMER } from '@/content/health'
 
 type Tab = 'croissance' | 'vaccins' | 'rdv' | 'documents'
@@ -343,6 +345,7 @@ function VaccineSheet({ dose, onClose }: { dose: ScheduledDose | null; onClose: 
 function BabyAppointments({ birth }: { birth: string }) {
   const all = useRows<Appointment>('appointments', (a) => a.subject === 'baby') ?? []
   const [editing, setEditing] = useState<Partial<Appointment> | null>(null)
+  const toggleDone = useToggleAppointment()
   const exams = examSchedule(birth)
   const now = new Date().toISOString()
   const upcoming = all.filter((a) => a.starts_at >= now).sort((a, b) => a.starts_at.localeCompare(b.starts_at))
@@ -366,15 +369,17 @@ function BabyAppointments({ birth }: { birth: string }) {
         </div>
       )}
       {[...upcoming, ...past].map((a) => (
-        <button key={a.id} onClick={() => setEditing(a)} className={`press text-left ${a.starts_at < now ? 'opacity-70' : ''}`}>
-          <Card className="!p-4">
-            <p className="font-bold">{a.title}</p>
+        <Card key={a.id} className={`!p-3 flex items-center gap-2 ${a.done || a.starts_at < now ? 'opacity-75' : ''}`}>
+          <CheckCircle checked={a.done} onToggle={() => toggleDone(a)} label={a.title} />
+          <button onClick={() => setEditing(a)} className="press flex-1 min-w-0 text-left">
+            <p className={`font-bold ${a.done ? 'line-through' : ''}`}>{a.title}</p>
             <p className="text-sm text-ink-soft">
+              {a.done ? '✓ Fait · ' : ''}
               {new Date(a.starts_at).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
               {a.location ? ` · ${a.location}` : ''}
             </p>
-          </Card>
-        </button>
+          </button>
+        </Card>
       ))}
       <details className="rounded-3xl bg-surface-2 p-4 text-sm">
         <summary className="font-bold cursor-pointer min-h-8">Repères des examens de suivi (0-2 ans)</summary>

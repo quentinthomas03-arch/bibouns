@@ -7,11 +7,14 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Biboun } from '@/components/Biboun'
 import { BabyTrack } from './BabyTrack'
 import { QuestionsPanel } from '@/components/Questions'
+import { CheckCircle } from '@/components/MilestoneCheck'
+import { useMilestonesDone } from '@/app/milestonesDone'
+import { useToast } from '@/components/ui/Toast'
 import { LineChart } from '@/components/charts/LineChart'
 import { AppointmentSheet, JournalSheet, MeasureSheet, type Appointment, type JournalEntry, type Measurement } from '@/components/pregnancy/Sheets'
 import { usePhase } from '@/app/phase'
 import { useMembers } from '@/app/members'
-import { useRows } from '@/sync/store'
+import { useRows, useStore } from '@/sync/store'
 import { datedMilestones, formatRange, type DatedMilestone } from '@/lib/milestones'
 import { formatBP } from '@/lib/measures'
 import { MILESTONES_DISCLAIMER } from '@/content/milestones'
@@ -123,20 +126,23 @@ function AppointmentCard({ a, onClick }: { a: Appointment; onClick: () => void }
   const k = kindInfo(a.kind)
   const d = new Date(a.starts_at)
   const qCount = (a.questions ?? '').split('\n').filter((l) => l.trim()).length
+  const toggleDone = useToggleAppointment()
   return (
     <li>
-      <button onClick={onClick} className="press w-full text-left">
-        <Card className="!p-4 flex gap-4">
+      <Card className={`!p-3 flex items-center gap-2 ${a.done ? 'opacity-75' : ''}`}>
+        <CheckCircle checked={a.done} onToggle={() => toggleDone(a)} label={a.title} />
+        <button onClick={onClick} className="press flex-1 min-w-0 flex gap-3 text-left">
           <div className="w-14 shrink-0 rounded-2xl bg-primary-soft text-center py-2">
             <p className="text-xs font-bold uppercase">{d.toLocaleDateString('fr-FR', { month: 'short' })}</p>
             <p className="font-display text-2xl font-semibold leading-none">{d.getDate()}</p>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold leading-tight">
+            <p className={`font-bold leading-tight ${a.done ? 'line-through' : ''}`}>
               <span aria-hidden>{k.emoji} </span>
               {a.title}
             </p>
             <p className="text-sm text-ink-soft">
+              {a.done ? '✓ Fait · ' : ''}
               {d.toLocaleDateString('fr-FR', { weekday: 'long' })} à {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </p>
             {a.location && (
@@ -144,16 +150,26 @@ function AppointmentCard({ a, onClick }: { a: Appointment; onClick: () => void }
                 <MapPin size={14} aria-hidden /> {a.location}
               </p>
             )}
-            {qCount > 0 && (
+            {qCount > 0 && !a.done && (
               <p className="text-sm font-semibold text-primary flex items-center gap-1 mt-1">
                 <HelpCircle size={14} aria-hidden /> {qCount} question{qCount > 1 ? 's' : ''} à poser
               </p>
             )}
           </div>
-        </Card>
-      </button>
+        </button>
+      </Card>
     </li>
   )
+}
+
+/** Cocher / décocher un rendez-vous comme fait (avec Annuler). */
+export function useToggleAppointment() {
+  const { patch } = useStore()
+  const toast = useToast()
+  return async (a: Appointment) => {
+    await patch('appointments', a.id, { done: !a.done })
+    toast(a.done ? 'Rendez-vous remis à faire' : `« ${a.title} » : fait ✓`, { label: 'Annuler', run: () => patch('appointments', a.id, { done: a.done }) })
+  }
 }
 
 // ------------------------------------------------------------------ journal
@@ -275,56 +291,84 @@ const KIND = { medical: { emoji: '🩺', label: 'Médical' }, admin: { emoji: '�
 
 function Milestones() {
   const { dueDate, baby } = usePhase()
+  const { done, setDone } = useMilestonesDone()
+  const { byId } = useMembers()
+  const toast = useToast()
   const [showPast, setShowPast] = useState(false)
+  const [showDone, setShowDone] = useState(false)
   if (!dueDate) return <p className="mt-6 text-center text-ink-soft">Ajoute la date prévue dans les réglages.</p>
   const list = datedMilestones(dueDate, (baby?.born_at as string) ?? null)
-  const past = list.filter((m) => m.status === 'past')
-  const rest = list.filter((m) => m.status !== 'past')
+  const finished = list.filter((m) => done.has(m.id))
+  const past = list.filter((m) => m.status === 'past' && !done.has(m.id))
+  const rest = list.filter((m) => m.status !== 'past' && !done.has(m.id))
+
+  const toggle = async (m: DatedMilestone) => {
+    const was = done.has(m.id)
+    await setDone(m.id, !was)
+    toast(was ? 'Remis à faire' : `« ${m.title} » : fait ✓`, { label: 'Annuler', run: () => setDone(m.id, was) })
+  }
+  const row = (m: DatedMilestone) => {
+    const info = done.get(m.id)
+    return <MilestoneRow key={m.id} m={m} done={info ? { at: info.at, who: byId(info.by)?.first_name, color: byId(info.by)?.color } : null} onToggle={() => toggle(m)} />
+  }
+
   return (
     <section className="mt-4">
       <div role="note" className="rounded-3xl bg-mustard/25 border-2 border-mustard/50 p-4 text-sm">
         <strong>⚠️ À vérifier.</strong> {MILESTONES_DISCLAIMER}
       </div>
-      <ol className="mt-4 flex flex-col gap-3">
-        {rest.map((m) => (
-          <MilestoneRow key={m.id} m={m} />
-        ))}
-      </ol>
+      <p className="mt-3 text-sm font-semibold text-ink-soft px-1">
+        Touchez le rond quand c’est fait · {finished.length}/{list.length} faites
+      </p>
+      <ol className="mt-2 flex flex-col gap-3">{rest.map(row)}</ol>
       {past.length > 0 && (
         <>
           <button onClick={() => setShowPast(!showPast)} className="press mt-5 flex items-center gap-1 font-bold text-ink-soft min-h-11">
-            <ChevronDown size={18} className={showPast ? 'rotate-180' : ''} /> Passées ({past.length})
+            <ChevronDown size={18} className={showPast ? 'rotate-180' : ''} /> Dates passées, pas cochées ({past.length})
           </button>
-          {showPast && (
-            <ol className="flex flex-col gap-3 opacity-70">
-              {past.map((m) => (
-                <MilestoneRow key={m.id} m={m} />
-              ))}
-            </ol>
-          )}
+          {showPast && <ol className="flex flex-col gap-3">{past.map(row)}</ol>}
+        </>
+      )}
+      {finished.length > 0 && (
+        <>
+          <button onClick={() => setShowDone(!showDone)} className="press mt-3 flex items-center gap-1 font-bold text-ink-soft min-h-11">
+            <ChevronDown size={18} className={showDone ? 'rotate-180' : ''} /> Faites ✓ ({finished.length})
+          </button>
+          {showDone && <ol className="flex flex-col gap-3">{finished.map(row)}</ol>}
         </>
       )}
     </section>
   )
 }
 
-function MilestoneRow({ m }: { m: DatedMilestone }) {
+function MilestoneRow({ m, done, onToggle }: { m: DatedMilestone; done: { at: string; who?: string; color?: string } | null; onToggle: () => void }) {
   const k = KIND[m.kind]
   return (
-    <li className={`rounded-3xl p-4 shadow-soft ${m.status === 'now' ? 'bg-primary-soft' : 'bg-surface'}`}>
+    <li className={`rounded-3xl p-4 shadow-soft ${done ? 'bg-surface opacity-75' : m.status === 'now' ? 'bg-primary-soft' : 'bg-surface'}`}>
       <div className="flex items-start gap-3">
-        <span className="text-2xl" aria-hidden>
-          {k.emoji}
-        </span>
-        <div className="flex-1">
-          <p className="font-bold leading-tight">{m.title}</p>
-          <p className="text-sm font-semibold text-ink-soft">
-            {m.status === 'now' && <span className="text-primary">En ce moment · </span>}
-            {m.status === 'soon' && <span className="text-primary">Bientôt · </span>}
-            {formatRange(m.start, m.end)}
+        <CheckCircle checked={!!done} onToggle={onToggle} label={m.title} color={done?.color} />
+        <div className="flex-1 min-w-0">
+          <p className={`font-bold leading-tight ${done ? 'line-through' : ''}`}>
+            <span aria-hidden>{k.emoji} </span>
+            {m.title}
           </p>
-          <p className="text-sm mt-1">{m.detail}</p>
-          {m.check && <p className="text-xs text-ink-soft mt-1">À vérifier : {m.check}</p>}
+          {done ? (
+            <p className="text-sm font-semibold text-ink-soft">
+              Fait le {new Date(done.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+              {done.who ? ` · par ${done.who}` : ''}
+            </p>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-ink-soft">
+                {m.status === 'now' && <span className="text-primary">En ce moment · </span>}
+                {m.status === 'soon' && <span className="text-primary">Bientôt · </span>}
+                {m.status === 'past' && <span className="text-danger">Date passée · </span>}
+                {formatRange(m.start, m.end)}
+              </p>
+              <p className="text-sm mt-1">{m.detail}</p>
+              {m.check && <p className="text-xs text-ink-soft mt-1">À vérifier : {m.check}</p>}
+            </>
+          )}
         </div>
       </div>
     </li>
